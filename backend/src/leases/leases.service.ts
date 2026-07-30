@@ -4,7 +4,7 @@ import { UpdateLeaseDto } from './dto/update-lease.dto';
 
 @Injectable()
 export class LeasesService {
-  create(createLeaseDto: CreateLeaseDto) {
+  create(_createLeaseDto: CreateLeaseDto) {
     return 'This action adds a new lease';
   }
 
@@ -16,7 +16,7 @@ export class LeasesService {
     return `This action returns a #${id} lease`;
   }
 
-  update(id: number, updateLeaseDto: UpdateLeaseDto) {
+  update(id: number, _updateLeaseDto: UpdateLeaseDto) {
     return `This action updates a #${id} lease`;
   }
 

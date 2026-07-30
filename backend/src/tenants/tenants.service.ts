@@ -4,7 +4,7 @@ import { UpdateTenantDto } from './dto/update-tenant.dto';
 
 @Injectable()
 export class TenantsService {
-  create(createTenantDto: CreateTenantDto) {
+  create(_createTenantDto: CreateTenantDto) {
     return 'This action adds a new tenant';
   }
 
@@ -16,7 +16,7 @@ export class TenantsService {
     return `This action returns a #${id} tenant`;
   }
 
-  update(id: number, updateTenantDto: UpdateTenantDto) {
+  update(id: number, _updateTenantDto: UpdateTenantDto) {
     return `This action updates a #${id} tenant`;
   }
 

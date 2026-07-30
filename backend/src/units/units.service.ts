@@ -4,7 +4,7 @@ import { UpdateUnitDto } from './dto/update-unit.dto';
 
 @Injectable()
 export class UnitsService {
-  create(createUnitDto: CreateUnitDto) {
+  create(_createUnitDto: CreateUnitDto) {
     return 'This action adds a new unit';
   }
 
@@ -16,7 +16,7 @@ export class UnitsService {
     return `This action returns a #${id} unit`;
   }
 
-  update(id: number, updateUnitDto: UpdateUnitDto) {
+  update(id: number, _updateUnitDto: UpdateUnitDto) {
     return `This action updates a #${id} unit`;
   }
 

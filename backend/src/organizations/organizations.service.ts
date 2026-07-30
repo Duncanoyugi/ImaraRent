@@ -16,7 +16,7 @@ export class OrganizationsService {
     return `This action returns a #${id} organization`;
   }
 
-  update(id: number, updateOrganizationDto: UpdateOrganizationDto) {
+  update(id: number, _updateOrganizationDto: UpdateOrganizationDto) {
     return `This action updates a #${id} organization`;
   }
 
