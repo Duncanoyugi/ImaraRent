@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to ImaraRent</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0;">
+    <h1 style="margin: 0; font-size: 28px;">🏠 ImaraRent</h1>
+    <p style="margin: 5px 0 0; opacity: 0.8;">Welcome to the platform</p>
+  </div>
+
+  <div style="padding: 30px 20px; background: #f7fafc; border-radius: 0 0 8px 8px;">
+    <p style="font-size: 18px; margin-top: 0;">Hello {{firstName}} {{lastName}},</p>
+
+    <p>You have been invited to join <strong>{{organizationName}}</strong> as a tenant at <strong>{{propertyName}}</strong> (Unit {{unitNumber}}).</p>
+
+    <p>To get started, please click the button below to set up your account:</p>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="{{invitationLink}}"
+         style="background-color: #2b6cb0; color: white; padding: 14px 40px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+        Complete Registration
+      </a>
+    </div>
+
+    <p style="font-size: 14px; color: #718096;">This link will expire in <strong>7 days</strong>.</p>
+
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+
+    <div style="font-size: 14px; color: #718096;">
+      <p style="margin: 5px 0;"><strong>Property Details</strong></p>
+      <p style="margin: 5px 0;">{{propertyName}}</p>
+      <p style="margin: 5px 0;">{{propertyAddress}}</p>
+      <p style="margin: 5px 0;">Unit: {{unitNumber}}</p>
+      <p style="margin: 5px 0;">Rent: {{formatCurrency rentAmount}}/month</p>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+
+    <p style="font-size: 14px; color: #718096; margin-bottom: 0;">
+      If you have any questions, please contact your property manager at
+      <a href="mailto:{{managerEmail}}" style="color: #2b6cb0;">{{managerEmail}}</a>
+    </p>
+
+    <p style="font-size: 14px; color: #718096; margin: 5px 0 0;">
+      Thank you for choosing ImaraRent.
+    </p>
+  </div>
+</body>
+</html>

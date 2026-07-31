@@ -1,0 +1,3 @@
+REMINDER: Rent of KES {{rentAmount}} for {{propertyName}} (Unit {{unitNumber}}) 
+is due on {{formatDate dueDate}}. 
+Please pay via M-Pesa Paybill {{paybillNumber}} using account {{invoiceNumber}}. ImaraRent

@@ -14,30 +14,28 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "duncan@imara.com",
-  "password": "StrongPassword123!"
+  "email": "duncanoyugi2001@gmail.com",
+  "password": "Dante@254"
 }
 
 ### Store tokens
-@authToken = {{login.response.body.accessToken}}
-@refreshToken = {{login.response.body.refreshToken}}
-@organizationId = {{login.response.body.user.organizationId}}
-
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA5NzA0LCJleHAiOjE3ODU1MTA2MDR9.jn2aST6RvZ3MTlxZwcBpmnf8W5M7Q6hBxyBrorgOYeI
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA5NzA0LCJleHAiOjE3ODYxMTQ1MDR9.1msjsGvWJgV29ClI2bsJy9a-El4SMPpZ4huc7Kdp5rg
+@organizationId = cms8xat390000j0u37weaa25h
 ### ============================================
 ### ORGANIZATIONS
 ### ============================================
 
 ### 1. Get current organization
 GET {{baseUrl}}/organizations/me
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 
 ### 2. Get organization by ID
-GET {{baseUrl}}/organizations/{{organizationId}}
-Authorization: Bearer {{authToken}}
-
+GET {{baseUrl}}/organizations/cms8xatcu0001j0u3b25nr95p
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA5MjQwLCJleHAiOjE3ODU1MTAxNDB9.w0cSe3cWHzdrLRVXDZO8Q-Y7336ug08Vtc89UhuNsck
 ### 3. Update organization (Owner only)
 PATCH {{baseUrl}}/organizations/{{organizationId}}
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 Content-Type: {{contentType}}
 
 {
@@ -48,11 +46,11 @@ Content-Type: {{contentType}}
 
 ### 4. Get organization users
 GET {{baseUrl}}/organizations/{{organizationId}}/users
-Authorization: Bearer {{authToken}}
+Authorization: BearereyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 
 ### 5. Get organization stats
 GET {{baseUrl}}/organizations/{{organizationId}}/stats
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 
 ### ============================================
 ### USERS
@@ -60,21 +58,21 @@ Authorization: Bearer {{authToken}}
 
 ### 6. Get current user profile
 GET {{baseUrl}}/users/me
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 
 ### 7. Get user by ID
 GET {{baseUrl}}/users/{{login.response.body.user.id}}
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 
 ### 8. Invite manager (Owner only)
 POST {{baseUrl}}/users/invite-manager
-Authorization: Bearer {{authToken}}
-Content-Type: {{contentType}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA5NzA0LCJleHAiOjE3ODU1MTA2MDR9.jn2aST6RvZ3MTlxZwcBpmnf8W5M7Q6hBxyBrorgOYeI
+Content-Type: application/json
 
 {
   "firstName": "Jane",
   "lastName": "Wanjiru",
-  "email": "jane.wanjiru@imara.com",
+  "email": "jane.wanjiru@gmail.com",
   "phone": "+254798765432"
 }
 
@@ -83,7 +81,7 @@ Content-Type: {{contentType}}
 
 ### 9. Update user profile (self)
 PATCH {{baseUrl}}/users/{{login.response.body.user.id}}
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 Content-Type: {{contentType}}
 
 {
@@ -93,11 +91,11 @@ Content-Type: {{contentType}}
 
 ### 10. Deactivate user (Owner only)
 PATCH {{baseUrl}}/users/{{managerId}}/deactivate
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 
 ### 11. Reactivate user (Owner only)
 PATCH {{baseUrl}}/users/{{managerId}}/reactivate
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA4NzQ2LCJleHAiOjE3ODU1MDk2NDZ9.vcx1k0zdPb4zmDg4eVUnivLrcVCVx065abo5EiYgI3g
 
 ### ============================================
 ### TEST MANAGER ACCESS
@@ -109,35 +107,35 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "jane.wanjiru@imara.com",
-  "password": "{{tempPassword}}"
+  "email": "jane.wanjiru@gmail.com",
+  "password": "XBlCjAK9@b!k"
 }
 
 ### Get manager token
-@managerToken = {{managerLogin.response.body.accessToken}}
+@managerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM5MmZkbXMwMDAxdTNjb255ZTZnM205IiwiZW1haWwiOiJqYW5lLndhbmppcnVAZ21haWwuY29tIiwicm9sZSI6Ik1BTkFHRVIiLCJvcmdhbml6YXRpb25JZCI6ImNtczh4YXQzOTAwMDBqMHUzN3dlYWEyNWgiLCJpYXQiOjE3ODU1MDk5OTMsImV4cCI6MTc4NTUxMDg5M30.12He6eAne-zkfFmdCs58b70CDZXKNqy18y1-ORIGEKI
 
 ### 13. Manager tries to invite another manager (should fail - only owner)
 POST {{baseUrl}}/users/invite-manager
-Authorization: Bearer {{managerToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM5MmZkbXMwMDAxdTNjb255ZTZnM205IiwiZW1haWwiOiJqYW5lLndhbmppcnVAZ21haWwuY29tIiwicm9sZSI6Ik1BTkFHRVIiLCJvcmdhbml6YXRpb25JZCI6ImNtczh4YXQzOTAwMDBqMHUzN3dlYWEyNWgiLCJpYXQiOjE3ODU1MDk5OTMsImV4cCI6MTc4NTUxMDg5M30.12He6eAne-zkfFmdCs58b70CDZXKNqy18y1-ORIGEKI
 Content-Type: {{contentType}}
 
 {
   "firstName": "Peter",
   "lastName": "Ochieng",
-  "email": "peter@imara.com"
+  "email": "peter@gmail.com"
 }
 
 ### 14. Manager can view their organization
 GET {{baseUrl}}/organizations/me
-Authorization: Bearer {{managerToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM5MmZkbXMwMDAxdTNjb255ZTZnM205IiwiZW1haWwiOiJqYW5lLndhbmppcnVAZ21haWwuY29tIiwicm9sZSI6Ik1BTkFHRVIiLCJvcmdhbml6YXRpb25JZCI6ImNtczh4YXQzOTAwMDBqMHUzN3dlYWEyNWgiLCJpYXQiOjE3ODU1MDk5OTMsImV4cCI6MTc4NTUxMDg5M30.12He6eAne-zkfFmdCs58b70CDZXKNqy18y1-ORIGEKI
 
 ### 15. Manager can view users
 GET {{baseUrl}}/organizations/{{organizationId}}/users
 Authorization: Bearer {{managerToken}}
 
 ### 16. Manager tries to update organization (should fail)
-PATCH {{baseUrl}}/organizations/{{organizationId}}
-Authorization: Bearer {{managerToken}}
+PATCH {{baseUrl}}/organizations/cms8xat390000j0u37weaa25h
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM5MmZkbXMwMDAxdTNjb255ZTZnM205IiwiZW1haWwiOiJqYW5lLndhbmppcnVAZ21haWwuY29tIiwicm9sZSI6Ik1BTkFHRVIiLCJvcmdhbml6YXRpb25JZCI6ImNtczh4YXQzOTAwMDBqMHUzN3dlYWEyNWgiLCJpYXQiOjE3ODU1MDk5OTMsImV4cCI6MTc4NTUxMDg5M30.12He6eAne-zkfFmdCs58b70CDZXKNqy18y1-ORIGEKI
 Content-Type: {{contentType}}
 
 {

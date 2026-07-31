@@ -15,11 +15,11 @@ Content-Type: {{contentType}}
 
 {
   "firstName": "Duncan",
-  "lastName": "Maina",
-  "email": "duncan@imara.com",
-  "password": "StrongPassword123!",
+  "lastName": "Ochieng",
+  "email": "duncanoyugi2001@gmail.com",
+  "password": "Dante@254",
   "phone": "+254712345678",
-  "organizationName": "Maina Properties Ltd",
+  "organizationName": "Dante Properties Ltd",
   "organizationAddress": "Nairobi, Kenya"
 }
 
@@ -31,11 +31,11 @@ POST {{baseUrl}}/auth/register
 Content-Type: {{contentType}}
 
 {
-  "firstName": "Another",
-  "lastName": "User",
-  "email": "duncan@imara.com",
-  "password": "AnotherPassword123!",
-  "organizationName": "Another Properties Ltd"
+  "firstName": "Loice",
+  "lastName": "Jane",
+  "email": "loice254@gmail.com",
+  "password": "Loice@254",
+  "organizationName": "Loice Properties Ltd"
 }
 
 ### ============================================
@@ -46,8 +46,8 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "duncan@imara.com",
-  "password": "StrongPassword123!"
+  "email": "duncanoyugi2001@gmail.com",
+  "password": "Dante@254"
 }
 
 ### Save the access token from response for subsequent requests
@@ -59,8 +59,7 @@ Content-Type: {{contentType}}
 ### ============================================
 
 GET {{baseUrl}}/auth/me
-Authorization: Bearer {{authToken}}
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA3OTMxLCJleHAiOjE3ODU1MDg4MzF9.C9J99vBTvAHBTxKaIzjkffoRy7ALleIzF-vzbELYPH4
 ### ============================================
 ### 5. REFRESH TOKEN - Get new access token
 ### ============================================
@@ -77,7 +76,8 @@ Content-Type: {{contentType}}
 ### ============================================
 
 POST {{baseUrl}}/auth/logout
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg1NTA3OTMxLCJleHAiOjE3ODU1MDg4MzF9.C9J99vBTvAHBTxKaIzjkffoRy7ALleIzF-vzbELYPH4
+
 
 ### ============================================
 ### 7. LOGIN - Invalid credentials (should fail)
