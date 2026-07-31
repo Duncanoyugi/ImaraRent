@@ -1,0 +1,145 @@
+### ============================================
+### ORGANIZATIONS & USERS TESTS
+### ImaraRent - REST Client
+### ============================================
+
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+### First, login and get tokens
+### ============================================
+
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "duncan@imara.com",
+  "password": "StrongPassword123!"
+}
+
+### Store tokens
+@authToken = {{login.response.body.accessToken}}
+@refreshToken = {{login.response.body.refreshToken}}
+@organizationId = {{login.response.body.user.organizationId}}
+
+### ============================================
+### ORGANIZATIONS
+### ============================================
+
+### 1. Get current organization
+GET {{baseUrl}}/organizations/me
+Authorization: Bearer {{authToken}}
+
+### 2. Get organization by ID
+GET {{baseUrl}}/organizations/{{organizationId}}
+Authorization: Bearer {{authToken}}
+
+### 3. Update organization (Owner only)
+PATCH {{baseUrl}}/organizations/{{organizationId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Maina Properties & Estates Ltd",
+  "address": "Westlands, Nairobi, Kenya",
+  "phone": "+254712345678"
+}
+
+### 4. Get organization users
+GET {{baseUrl}}/organizations/{{organizationId}}/users
+Authorization: Bearer {{authToken}}
+
+### 5. Get organization stats
+GET {{baseUrl}}/organizations/{{organizationId}}/stats
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### USERS
+### ============================================
+
+### 6. Get current user profile
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+
+### 7. Get user by ID
+GET {{baseUrl}}/users/{{login.response.body.user.id}}
+Authorization: Bearer {{authToken}}
+
+### 8. Invite manager (Owner only)
+POST {{baseUrl}}/users/invite-manager
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Jane",
+  "lastName": "Wanjiru",
+  "email": "jane.wanjiru@imara.com",
+  "phone": "+254798765432"
+}
+
+### Save manager ID from response
+### @managerId = RESPONSE_ID
+
+### 9. Update user profile (self)
+PATCH {{baseUrl}}/users/{{login.response.body.user.id}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Duncan K.",
+  "phone": "+254722123456"
+}
+
+### 10. Deactivate user (Owner only)
+PATCH {{baseUrl}}/users/{{managerId}}/deactivate
+Authorization: Bearer {{authToken}}
+
+### 11. Reactivate user (Owner only)
+PATCH {{baseUrl}}/users/{{managerId}}/reactivate
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### TEST MANAGER ACCESS
+### ============================================
+
+### 12. Login as manager
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "jane.wanjiru@imara.com",
+  "password": "{{tempPassword}}"
+}
+
+### Get manager token
+@managerToken = {{managerLogin.response.body.accessToken}}
+
+### 13. Manager tries to invite another manager (should fail - only owner)
+POST {{baseUrl}}/users/invite-manager
+Authorization: Bearer {{managerToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Peter",
+  "lastName": "Ochieng",
+  "email": "peter@imara.com"
+}
+
+### 14. Manager can view their organization
+GET {{baseUrl}}/organizations/me
+Authorization: Bearer {{managerToken}}
+
+### 15. Manager can view users
+GET {{baseUrl}}/organizations/{{organizationId}}/users
+Authorization: Bearer {{managerToken}}
+
+### 16. Manager tries to update organization (should fail)
+PATCH {{baseUrl}}/organizations/{{organizationId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Hacked Properties"
+}

@@ -1,0 +1,265 @@
+### ============================================
+### PROPERTIES & UNITS TESTS
+### ImaraRent - REST Client
+### ============================================
+
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+### Login as owner
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "duncan@imara.com",
+  "password": "StrongPassword123!"
+}
+
+### Store tokens
+@authToken = {{login.response.body.accessToken}}
+@organizationId = {{login.response.body.user.organizationId}}
+
+### ============================================
+### PROPERTIES
+### ============================================
+
+### 1. Create property
+# @name createProperty
+POST {{baseUrl}}/properties
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Sunset Apartments",
+  "description": "Luxury apartments with swimming pool and gym",
+  "address": "123 Ngong Road",
+  "city": "Nairobi",
+  "county": "Nairobi",
+  "postalCode": "00100",
+  "latitude": -1.2921,
+  "longitude": 36.8219
+}
+
+### Store property ID
+@propertyId = {{createProperty.response.body.id}}
+
+### 2. Get all properties
+GET {{baseUrl}}/properties
+Authorization: Bearer {{authToken}}
+
+### 3. Get property stats
+GET {{baseUrl}}/properties/stats
+Authorization: Bearer {{authToken}}
+
+### 4. Get property by ID
+GET {{baseUrl}}/properties/{{propertyId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Update property
+PATCH {{baseUrl}}/properties/{{propertyId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Sunset Luxury Apartments",
+  "description": "Premium luxury apartments with full amenities"
+}
+
+### 6. Create second property
+POST {{baseUrl}}/properties
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Green Valley Estate",
+  "description": "Spacious family homes in a secure gated community",
+  "address": "45 Thika Road",
+  "city": "Nairobi",
+  "county": "Kiambu",
+  "postalCode": "00600"
+}
+
+### ============================================
+### UNITS
+### ============================================
+
+### 7. Create a unit
+# @name createUnit
+POST {{baseUrl}}/units
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "number": "A101",
+  "floor": "1st Floor",
+  "bedrooms": 2,
+  "bathrooms": 1,
+  "squareFeet": 850,
+  "rentAmount": 45000,
+  "propertyId": "{{propertyId}}",
+  "status": "VACANT"
+}
+
+### Store unit ID
+@unitId = {{createUnit.response.body.id}}
+
+### 8. Create another unit
+POST {{baseUrl}}/units
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "number": "A102",
+  "floor": "1st Floor",
+  "bedrooms": 1,
+  "bathrooms": 1,
+  "squareFeet": 550,
+  "rentAmount": 35000,
+  "propertyId": "{{propertyId}}",
+  "status": "VACANT"
+}
+
+### 9. Create a 3-bedroom unitPOST {{baseUrl}}/units
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "number": "B201",
+  "floor": "2nd Floor",
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "squareFeet": 1200,
+  "rentAmount": 65000,
+  "propertyId": "{{propertyId}}",
+  "status": "VACANT"
+}
+
+### 10. Bulk create units
+POST {{baseUrl}}/units/bulk
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "units": [
+    {
+      "number": "B202",
+      "floor": "2nd Floor",
+      "bedrooms": 2,
+      "bathrooms": 1,
+      "squareFeet": 800,
+      "rentAmount": 42000,
+      "propertyId": "{{propertyId}}",
+      "status": "VACANT"
+    },
+    {
+      "number": "B203",
+      "floor": "2nd Floor",
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "squareFeet": 500,
+      "rentAmount": 30000,
+      "propertyId": "{{propertyId}}",
+      "status": "VACANT"
+    }
+  ]
+}
+
+### 11. Get all units
+GET {{baseUrl}}/units
+Authorization: Bearer {{authToken}}
+
+### 12. Get units by property
+GET {{baseUrl}}/units?propertyId={{propertyId}}
+Authorization: Bearer {{authToken}}
+
+### 13. Get unit by ID
+GET {{baseUrl}}/units/{{unitId}}
+Authorization: Bearer {{authToken}}
+
+### 14. Update unit
+PATCH {{baseUrl}}/units/{{unitId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "rentAmount": 47000,
+  "bedrooms": 2,
+  "bathrooms": 2
+}
+
+### 15. Try to delete unit (should work if no lease)
+DELETE {{baseUrl}}/units/{{unitId}}
+Authorization: Bearer {{authToken}}
+
+### 16. Try to delete property (should fail if has units)
+DELETE {{baseUrl}}/properties/{{propertyId}}
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### TEST MANAGER ACCESS
+### ============================================
+
+### First create a manager
+# @name inviteManager
+POST {{baseUrl}}/users/invite-manager
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Jane",
+  "lastName": "Wanjiru",
+  "email": "jane.manager@imara.com",
+  "phone": "+254798765432"
+}
+
+### Login as manager
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "jane.manager@imara.com",
+  "password": "{{inviteManager.response.body.tempPassword}}"
+}
+
+@managerToken = {{managerLogin.response.body.accessToken}}
+
+### 17. Manager can view properties
+GET {{baseUrl}}/properties
+Authorization: Bearer {{managerToken}}
+
+### 18. Manager can create property
+POST {{baseUrl}}/properties
+Authorization: Bearer {{managerToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Manager Property",
+  "address": "456 Mombasa Road",
+  "city": "Nairobi",
+  "county": "Nairobi"
+}
+
+### 19. Manager can create units
+POST {{baseUrl}}/units
+Authorization: Bearer {{managerToken}}
+Content-Type: {{contentType}}
+
+{
+  "number": "M001",
+  "floor": "Ground Floor",
+  "bedrooms": 1,
+  "bathrooms": 1,
+  "squareFeet": 400,
+  "rentAmount": 25000,
+  "propertyId": "{{propertyId}}"
+}
+
+### 20. Manager cannot delete property (Owner only)
+DELETE {{baseUrl}}/properties/{{propertyId}}
+Authorization: Bearer {{managerToken}}
+
+### 21. Manager cannot delete unit (Owner only)
+DELETE {{baseUrl}}/units/{{unitId}}
+Authorization: Bearer {{managerToken}}

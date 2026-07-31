@@ -1,0 +1,286 @@
+### ============================================
+### TENANTS & LEASES TESTS
+### ImaraRent - REST Client
+### ============================================
+
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+### Login as owner
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "duncan@imara.com",
+  "password": "StrongPassword123!"
+}
+
+### Store tokens
+@authToken = {{login.response.body.accessToken}}
+@organizationId = {{login.response.body.user.organizationId}}
+
+### Get a property with units first
+# @name getProperties
+GET {{baseUrl}}/properties
+Authorization: Bearer {{authToken}}
+
+### Store property and unit IDs
+@propertyId = {{getProperties.response.body[0].id}}
+@unitId = {{getProperties.response.body[0].units[0].id}}
+
+### ============================================
+### TENANTS
+### ============================================
+
+### 1. Create tenant with invitation
+# @name createTenant
+POST {{baseUrl}}/tenants
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Mary",
+  "lastName": "Wambui",
+  "email": "mary.wambui@imara.com",
+  "phone": "+254712345678",
+  "nationalId": "12345678",
+  "dateOfBirth": "1990-01-15",
+  "unitId": "{{unitId}}"
+}
+
+### Store tenant ID and token
+@tenantId = {{createTenant.response.body.id}}
+@invitationToken = {{createTenant.response.body.invitationToken}}
+
+### 2. Get all tenants
+GET {{baseUrl}}/tenants
+Authorization: Bearer {{authToken}}
+
+### 3. Get tenants by status
+GET {{baseUrl}}/tenants?status=PENDING
+Authorization: Bearer {{authToken}}
+
+### 4. Get tenant by ID
+GET {{baseUrl}}/tenants/{{tenantId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Get tenant by unit
+GET {{baseUrl}}/tenants/unit/{{unitId}}
+Authorization: Bearer {{authToken}}
+
+### 6. Update tenant
+PATCH {{baseUrl}}/tenants/{{tenantId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Mary W.",
+  "phone": "+254798765432"
+}
+
+### 7. Accept invitation (create user account)
+POST {{baseUrl}}/tenants/accept-invitation
+Content-Type: {{contentType}}
+
+{
+  "token": "{{invitationToken}}",
+  "password": "MaryPassword123!"
+}
+
+### 8. Login as tenant
+# @name tenantLogin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "mary.wambui@imara.com",
+  "password": "MaryPassword123!"
+}
+
+@tenantToken = {{tenantLogin.response.body.accessToken}}
+
+### 9. Tenant can view their own profile (we'll create this endpoint later)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{tenantToken}}
+
+### 10. Resend invitation (if needed)
+POST {{baseUrl}}/tenants/{{tenantId}}/resend-invitation
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{}
+
+### 11. Cancel invitation
+POST {{baseUrl}}/tenants/{{tenantId}}/cancel-invitation
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "reason": "Tenant found another property"
+}
+
+### Create a new tenant for lease testing
+# @name createTenant2
+POST {{baseUrl}}/tenants
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "James",
+  "lastName": "Ochieng",
+  "email": "james.ochieng@imara.com",
+  "phone": "+254722334455",
+  "nationalId": "87654321",
+  "dateOfBirth": "1988-05-20",
+  "unitId": "{{unitId}}"
+}
+
+@tenantId2 = {{createTenant2.response.body.id}}
+
+### Accept invitation for second tenant
+POST {{baseUrl}}/tenants/accept-invitation
+Content-Type: {{contentType}}
+
+{
+  "token": "{{createTenant2.response.body.invitationToken}}",
+  "password": "JamesPassword123!"
+}
+
+### ============================================
+### LEASES
+### ============================================
+
+### 12. Create a lease draft
+# @name createLease
+POST {{baseUrl}}/leases
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "startDate": "2024-02-01",
+  "endDate": "2025-01-31",
+  "rentAmount": 45000,
+  "depositAmount": 45000,
+  "tenantId": "{{tenantId2}}",
+  "unitId": "{{unitId}}"
+}
+
+### Store lease ID
+@leaseId = {{createLease.response.body.id}}
+
+### 13. Get all leases
+GET {{baseUrl}}/leases
+Authorization: Bearer {{authToken}}
+
+### 14. Get leases by status
+GET {{baseUrl}}/leases?status=DRAFT
+Authorization: Bearer {{authToken}}
+
+### 15. Get lease by ID
+GET {{baseUrl}}/leases/{{leaseId}}
+Authorization: Bearer {{authToken}}
+
+### 16. Update lease (draft only)
+PATCH {{baseUrl}}/leases/{{leaseId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "rentAmount": 47000,
+  "depositAmount": 50000
+}
+
+### 17. Activate lease (Owner only)
+POST {{baseUrl}}/leases/{{leaseId}}/activate
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{}
+
+### 18. Check unit status changed to OCCUPIED
+GET {{baseUrl}}/units/{{unitId}}
+Authorization: Bearer {{authToken}}
+
+### 19. Create another lease (should fail - unit occupied)
+POST {{baseUrl}}/leases
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "startDate": "2024-03-01",
+  "endDate": "2025-02-28",
+  "rentAmount": 50000,
+  "tenantId": "{{tenantId}}",
+  "unitId": "{{unitId}}"
+}
+
+### 20. Terminate lease
+POST {{baseUrl}}/leases/{{leaseId}}/terminate
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "reason": "Tenant moved out"
+}
+
+### 21. Check unit status changed to VACANT
+GET {{baseUrl}}/units/{{unitId}}
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### TEST MANAGER ACCESS
+### ============================================
+
+### Login as manager (if created earlier)
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "jane.manager@imara.com",
+  "password": "ManagerPassword123!"
+}
+
+@managerToken = {{managerLogin.response.body.accessToken}}
+
+### 22. Manager can view tenants
+GET {{baseUrl}}/tenants
+Authorization: Bearer {{managerToken}}
+
+### 23. Manager can create tenant
+POST {{baseUrl}}/tenants
+Authorization: Bearer {{managerToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Grace",
+  "lastName": "Akinyi",
+  "email": "grace.akinyi@imara.com",
+  "phone": "+254733445566",
+  "unitId": "{{unitId}}"
+}
+
+### 24. Manager cannot delete tenant (Owner only)
+DELETE {{baseUrl}}/tenants/{{tenantId}}
+Authorization: Bearer {{managerToken}}
+
+### 25. Manager can create lease draft
+POST {{baseUrl}}/leases
+Authorization: Bearer {{managerToken}}
+Content-Type: {{contentType}}
+
+{
+  "startDate": "2024-03-01",
+  "endDate": "2025-02-28",
+  "rentAmount": 55000,
+  "tenantId": "{{tenantId}}",
+  "unitId": "{{unitId}}"
+}
+
+### 26. Manager cannot activate lease (Owner only)
+POST {{baseUrl}}/leases/{{leaseId}}/activate
+Authorization: Bearer {{managerToken}}
+Content-Type: {{contentType}}
+
+{}

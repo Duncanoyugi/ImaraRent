@@ -1,0 +1,139 @@
+### ============================================
+### AUTHENTICATION TESTS
+### ImaraRent - REST Client
+### ============================================
+
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+### ============================================
+### 1. REGISTER - Create new owner with organization
+### ============================================
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Duncan",
+  "lastName": "Maina",
+  "email": "duncan@imara.com",
+  "password": "StrongPassword123!",
+  "phone": "+254712345678",
+  "organizationName": "Maina Properties Ltd",
+  "organizationAddress": "Nairobi, Kenya"
+}
+
+### ============================================
+### 2. REGISTER - Try duplicate email (should fail)
+### ============================================
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Another",
+  "lastName": "User",
+  "email": "duncan@imara.com",
+  "password": "AnotherPassword123!",
+  "organizationName": "Another Properties Ltd"
+}
+
+### ============================================
+### 3. LOGIN - Get access and refresh tokens
+### ============================================
+
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "duncan@imara.com",
+  "password": "StrongPassword123!"
+}
+
+### Save the access token from response for subsequent requests
+### @authToken = YOUR_ACCESS_TOKEN
+### @refreshToken = YOUR_REFRESH_TOKEN
+
+### ============================================
+### 4. GET CURRENT USER - Protected route
+### ============================================
+
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### 5. REFRESH TOKEN - Get new access token
+### ============================================
+
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### ============================================
+### 6. LOGOUT - Protected route
+### ============================================
+
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### 7. LOGIN - Invalid credentials (should fail)
+### ============================================
+
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "duncan@imara.com",
+  "password": "WrongPassword123!"
+}
+
+### ============================================
+### 8. GET CURRENT USER - Invalid token (should fail)
+### ============================================
+
+GET {{baseUrl}}/auth/me
+Authorization: Bearer invalid_token_here
+
+### ============================================
+### 9. REGISTER - Missing required fields (should fail)
+### ============================================
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Test",
+  "email": "test@example.com"
+}
+
+### ============================================
+### 10. REGISTER - Second owner (different email)
+### ============================================
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Jane",
+  "lastName": "Wanjiru",
+  "email": "jane@imara.com",
+  "password": "JanePassword123!",
+  "phone": "+254798765432",
+  "organizationName": "Wanjiru Estates",
+  "organizationAddress": "Kiambu, Kenya"
+}
+
+### ============================================
+### HOW TO USE THIS FILE:
+### ============================================
+### 1. Make sure your backend is running: npm run start:dev
+### 2. In VS Code, install "REST Client" extension
+### 3. Click "Send Request" above each request
+### 4. Copy the accessToken from response #3
+### 5. Replace {{authToken}} in subsequent requests
+###    (You can use VS Code's variable substitution)
+### ============================================
