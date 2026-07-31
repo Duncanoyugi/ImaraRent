@@ -1,0 +1,169 @@
+### ============================================
+### BILLING TESTS
+### ImaraRent - REST Client
+### ============================================
+
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+### Login as owner
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "duncan@imara.com",
+  "password": "StrongPassword123!"
+}
+
+### Store tokens
+@authToken = {{login.response.body.accessToken}}
+
+### Get active lease
+# @name getLeases
+GET {{baseUrl}}/leases?status=ACTIVE
+Authorization: Bearer {{authToken}}
+
+@leaseId = {{getLeases.response.body[0].id}}
+@tenantId = {{getLeases.response.body[0].tenantId}}
+
+### ============================================
+### GENERATE INVOICES
+### ============================================
+
+### 1. Generate invoices for current month
+POST {{baseUrl}}/billing/invoices/generate
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "periodStart": "2024-02-01",
+  "periodEnd": "2024-02-29",
+  "dueDate": "2024-03-05"
+}
+
+### ============================================
+### INVOICE MANAGEMENT
+### ============================================
+
+### 2. Get all invoices
+GET {{baseUrl}}/billing/invoices
+Authorization: Bearer {{authToken}}
+
+### 3. Get pending invoices
+GET {{baseUrl}}/billing/invoices?status=PENDING
+Authorization: Bearer {{authToken}}
+
+### 4. Get invoices for specific tenant
+GET {{baseUrl}}/billing/tenants/{{tenantId}}/invoices
+Authorization: Bearer {{authToken}}
+
+### 5. Get tenant balance
+GET {{baseUrl}}/billing/tenants/{{tenantId}}/balance
+Authorization: Bearer {{authToken}}
+
+### 6. Get invoice by ID
+@invoiceId = {{getInvoices.response.body[0].id}}
+GET {{baseUrl}}/billing/invoices/{{invoiceId}}
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### MANUAL INVOICES
+### ============================================
+
+### 7. Create manual invoice
+# @name createManualInvoice
+POST {{baseUrl}}/billing/invoices/manual
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "dueDate": "2024-03-10",
+  "totalAmount": 2500,
+  "description": "Water bill - February 2024",
+  "leaseId": "{{leaseId}}"
+}
+
+@manualInvoiceId = {{createManualInvoice.response.body.id}}
+
+### 8. Add line to invoice
+POST {{baseUrl}}/billing/invoices/{{manualInvoiceId}}/lines
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "description": "Garbage collection fee",
+  "amount": 500,
+  "type": "UTILITY"
+}
+
+### 9. Update invoice
+PATCH {{baseUrl}}/billing/invoices/{{manualInvoiceId}}
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "description": "Water bill + garbage - February 2024"
+}
+
+### 10. Void invoice (Owner only)
+POST {{baseUrl}}/billing/invoices/{{manualInvoiceId}}/void
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "reason": "Incorrect amount"
+}
+
+### ============================================
+### TEST MANAGER ACCESS
+### ============================================
+
+### Login as manager
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "jane.manager@imara.com",
+  "password": "ManagerPassword123!"
+}
+
+@managerToken = {{managerLogin.response.body.accessToken}}
+
+### 11. Manager can view invoices
+GET {{baseUrl}}/billing/invoices
+Authorization: Bearer {{managerToken}}
+
+### 12. Manager can view tenant balance
+GET {{baseUrl}}/billing/tenants/{{tenantId}}/balance
+Authorization: Bearer {{managerToken}}
+
+### 13. Manager cannot generate invoices (Owner only)
+POST {{baseUrl}}/billing/invoices/generate
+Authorization: Bearer {{managerToken}}
+Content-Type: {{contentType}}
+
+{
+  "periodStart": "2024-03-01",
+  "periodEnd": "2024-03-31"
+}
+
+### ============================================
+### TENANT ACCESS
+### ============================================
+
+### Login as tenant
+# @name tenantLogin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "mary.wambui@imara.com",
+  "password": "MaryPassword123!"
+}
+
+@tenantToken = {{tenantLogin.response.body.accessToken}}
+
+### 14. Tenant can view their own invoices (we'll add this endpoint in next phase)
+### For now, this will be implemented when we build the tenant portal

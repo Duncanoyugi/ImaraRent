@@ -1,0 +1,147 @@
+### ============================================
+### PAYMENTS TESTS
+### ImaraRent - REST Client
+### ============================================
+
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+### Login as owner
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "duncan@imara.com",
+  "password": "StrongPassword123!"
+}
+
+### Store tokens
+@authToken = {{login.response.body.accessToken}}
+
+### Get tenant with pending invoice
+# @name getInvoices
+GET {{baseUrl}}/billing/invoices?status=PENDING
+Authorization: Bearer {{authToken}}
+
+@invoiceId = {{getInvoices.response.body[0].id}}
+@tenantId = {{getInvoices.response.body[0].tenantId}}
+
+### ============================================
+### M-PESA PAYMENTS
+### ============================================
+
+### 1. Initiate M-Pesa STK Push
+# @name initiateMpesa
+POST {{baseUrl}}/payments/mpesa/initiate
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "invoiceId": "{{invoiceId}}",
+  "amount": 45000,
+  "phoneNumber": "0712345678"
+}
+
+@checkoutRequestId = {{initiateMpesa.response.body.checkoutRequestId}}
+
+### 2. Query payment status
+GET {{baseUrl}}/payments/mpesa/status/{{checkoutRequestId}}
+Authorization: Bearer {{authToken}}
+
+### 3. Simulate M-Pesa callback (for testing)
+POST {{baseUrl}}/payments/mpesa/callback
+Content-Type: {{contentType}}
+
+{
+  "Body": {
+    "stkCallback": {
+      "MerchantRequestID": "29115-34620561-1",
+      "CheckoutRequestID": "ws_CO_050220241347237925",
+      "ResultCode": 0,
+      "ResultDesc": "The service request is processed successfully.",
+      "CallbackMetadata": {
+        "Item": [
+          { "Name": "Amount", "Value": 45000 },
+          { "Name": "MpesaReceiptNumber", "Value": "NKQ43LJX3" },
+          { "Name": "TransactionDate", "Value": "20240205134723" },
+          { "Name": "PhoneNumber", "Value": 254712345678 }
+        ]
+      }
+    }
+  }
+}
+
+### ============================================
+### MANUAL PAYMENTS
+### ============================================
+
+### 4. Record manual payment (cash)
+POST {{baseUrl}}/payments/manual
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "tenantId": "{{tenantId}}",
+  "amount": 45000,
+  "method": "CASH",
+  "reference": "CASH-2024-02-15",
+  "notes": "February 2024 rent paid in cash"
+}
+
+### 5. Record manual payment (bank transfer)
+POST {{baseUrl}}/payments/manual
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "tenantId": "{{tenantId}}",
+  "amount": 2500,
+  "method": "BANK_TRANSFER",
+  "reference": "TRF-2024-02-16",
+  "notes": "Water bill payment"
+}
+
+### ============================================
+### PAYMENT QUERIES
+### ============================================
+
+### 6. Get all payments
+GET {{baseUrl}}/payments
+Authorization: Bearer {{authToken}}
+
+### 7. Get payments for specific tenant
+GET {{baseUrl}}/payments/tenant/{{tenantId}}
+Authorization: Bearer {{authToken}}
+
+### 8. Get payment by ID
+@paymentId = {{getPayments.response.body[0].id}}
+GET {{baseUrl}}/payments/{{paymentId}}
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### TEST TENANT ACCESS
+### ============================================
+
+### Login as tenant
+# @name tenantLogin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "mary.wambui@imara.com",
+  "password": "MaryPassword123!"
+}
+
+@tenantToken = {{tenantLogin.response.body.accessToken}}
+
+### 9. Tenant initiates payment (using their own invoice)
+POST {{baseUrl}}/payments/mpesa/initiate
+Authorization: Bearer {{tenantToken}}
+Content-Type: {{contentType}}
+
+{
+  "invoiceId": "{{invoiceId}}",
+  "amount": 45000,
+  "phoneNumber": "0712345678"
+}

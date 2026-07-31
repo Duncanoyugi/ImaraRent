@@ -473,3 +473,16 @@ model AuditLog {
   @@index([organizationId])
   @@index([createdAt])
 }
+
+//////////////////////////////////////////////////////
+// IDEMPOTENCY (For M-Pesa Callbacks)
+//////////////////////////////////////////////////////
+
+model IdempotencyKey {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  paymentId  String
+  createdAt  DateTime @default(now())
+
+  @@index([key])
+}
