@@ -294,6 +294,35 @@ model AuditLog {
   @@index([createdAt])
 }
 
+model NotificationTemplate {
+  id           String           @id @default(cuid())
+  type         NotificationType @unique
+  templatePath String
+  subject      String
+  content      String
+  description  String?
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([type])
+}
+
+model InAppNotification {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  metadata  Json?
+  read      Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([read])
+}
+
 enum UserRole {
   OWNER
   MANAGER
@@ -386,41 +415,4 @@ enum NotificationStatus {
   PENDING
   SENT
   FAILED
-}
-
-//////////////////////////////////////////////////////
-// NOTIFICATION TEMPLATES
-//////////////////////////////////////////////////////
-
-model NotificationTemplate {
-  id            String   @id @default(cuid())
-  type          NotificationType @unique
-  templatePath  String
-  subject       String
-  content       String   // HTML content
-  description   String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([type])
-}
-
-//////////////////////////////////////////////////////
-// IN-APP NOTIFICATIONS
-//////////////////////////////////////////////////////
-
-model InAppNotification {
-  id          String   @id @default(cuid())
-  userId      String
-  title       String
-  body        String
-  metadata    Json?
-  read        Boolean  @default(false)
-  readAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([userId])
-  @@index([read])
 }
