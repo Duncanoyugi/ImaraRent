@@ -11,6 +11,8 @@ import { BillingModule } from './billing/billing.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { TenantPortalModule } from './tenant-portal/tenant-portal.module';
+import { ReportsModule } from './reports/reports.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 
@@ -37,6 +39,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
     PaymentsModule,
     MaintenanceModule,
     NotificationsModule,
+    TenantPortalModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [],
