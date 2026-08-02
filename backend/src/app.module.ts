@@ -13,6 +13,9 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { TenantPortalModule } from './tenant-portal/tenant-portal.module';
 import { ReportsModule } from './reports/reports.module';
+import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
+import { LoggerModule } from './common/logger/logger.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 
@@ -41,6 +44,9 @@ import { ThrottlerModule } from '@nestjs/throttler';
     NotificationsModule,
     TenantPortalModule,
     ReportsModule,
+    HealthModule,
+    MetricsModule,
+    LoggerModule,
   ],
   controllers: [],
   providers: [],
