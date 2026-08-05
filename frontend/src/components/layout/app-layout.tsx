@@ -7,7 +7,11 @@ import { TenantSidebar } from './tenant-sidebar';
 import { MobileNav } from './mobile-nav';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 
-export const AppLayout = () => {
+interface AppLayoutProps {
+  children?: React.ReactNode;
+}
+
+export const AppLayout = ({ children }: AppLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
 
@@ -51,7 +55,7 @@ export const AppLayout = () => {
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <div className="mx-auto max-w-7xl">
-            <Outlet />
+            {children || <Outlet />}
           </div>
         </main>
         <MobileNav />
