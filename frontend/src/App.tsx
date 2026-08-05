@@ -1,34 +1,20 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { QueryProvider } from '@/app/providers/query-provider';
+import { ToastProvider } from '@/app/providers/toast-provider';
+import { AuthProvider } from '@/app/providers/auth-provider';
 import { BrowserRouter } from 'react-router-dom';
-
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import { AppRoutes } from '@/app/router';
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryProvider>
       <BrowserRouter>
-        <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-          <p className="text-center text-brand-600 text-xl mt-20 font-semibold">
-            🏠 ImaraRent - Frontend Setup Complete!
-          </p>
-          <p className="text-center text-neutral-500 mt-4">
-            Development environment is ready. Starting Phase 2 next.
-          </p>
-        </div>
+        <AuthProvider>
+          <ToastProvider>
+            <AppRoutes />
+          </ToastProvider>
+        </AuthProvider>
       </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    </QueryProvider>
   );
 }
 

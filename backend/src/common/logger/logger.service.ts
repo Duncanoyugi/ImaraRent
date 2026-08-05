@@ -2,11 +2,7 @@ import { Injectable, LoggerService } from '@nestjs/common';
 
 @Injectable()
 export class AppLogger implements LoggerService {
-  private context: string;
-
-  constructor(context?: string) {
-    this.context = context || 'Application';
-  }
+  private context: string = 'Application';
 
   private getContext(): string {
     return this.context;
