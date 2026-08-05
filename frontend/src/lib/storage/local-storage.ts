@@ -4,7 +4,11 @@ export const storage = {
     try {
       const item = localStorage.getItem(key);
       if (!item) return null;
-      return JSON.parse(item) as T;
+      try {
+        return JSON.parse(item) as T;
+      } catch {
+        return item as T;
+      }
     } catch (error) {
       console.error(`Error reading from localStorage key "${key}":`, error);
       return null;
@@ -13,7 +17,8 @@ export const storage = {
 
   set: <T>(key: string, value: T): void => {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      const valueToStore = typeof value === 'string' ? value : JSON.stringify(value);
+      localStorage.setItem(key, valueToStore);
     } catch (error) {
       console.error(`Error writing to localStorage key "${key}":`, error);
     }
@@ -59,7 +64,11 @@ export const sessionStorageUtil = {
     try {
       const item = sessionStorage.getItem(key);
       if (!item) return null;
-      return JSON.parse(item) as T;
+      try {
+        return JSON.parse(item) as T;
+      } catch {
+        return item as T;
+      }
     } catch (error) {
       return null;
     }
@@ -67,7 +76,8 @@ export const sessionStorageUtil = {
 
   set: <T>(key: string, value: T): void => {
     try {
-      sessionStorage.setItem(key, JSON.stringify(value));
+      const valueToStore = typeof value === 'string' ? value : JSON.stringify(value);
+      sessionStorage.setItem(key, valueToStore);
     } catch (error) {
       console.error(`Error writing to sessionStorage key "${key}":`, error);
     }

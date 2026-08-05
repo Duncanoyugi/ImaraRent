@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { AppLayout } from '@/components/layout';
 import { ProtectedRoute } from './protected-route';
 import { RoleBasedRoute } from './role-based-route';
 import { PublicRoute } from './public-route';
@@ -42,45 +43,47 @@ export const AppRoutes = () => {
 
         {/* Protected Routes - Role-based */}
         <Route element={<ProtectedRoute />}>
-          {/* Owner Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER', 'TENANT']}>
-                <OwnerDashboardPage />
-              </RoleBasedRoute>
-            }
-          />
-          
-          {/* Owner-only Routes */}
-          <Route
-            path="/owner/dashboard"
-            element={
-              <RoleBasedRoute allowedRoles={['OWNER']}>
-                <OwnerDashboardPage />
-              </RoleBasedRoute>
-            }
-          />
+          <Route element={<AppLayout />}>
+            {/* Dashboard - All roles */}
+            <Route
+              path="/dashboard"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER', 'TENANT']}>
+                  <OwnerDashboardPage />
+                </RoleBasedRoute>
+              }
+            />
+            
+            {/* Owner Routes */}
+            <Route
+              path="/owner/dashboard"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <OwnerDashboardPage />
+                </RoleBasedRoute>
+              }
+            />
 
-          {/* Manager-only Routes */}
-          <Route
-            path="/manager/dashboard"
-            element={
-              <RoleBasedRoute allowedRoles={['MANAGER']}>
-                <ManagerDashboardPage />
-              </RoleBasedRoute>
-            }
-          />
+            {/* Manager Routes */}
+            <Route
+              path="/manager/dashboard"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerDashboardPage />
+                </RoleBasedRoute>
+              }
+            />
 
-          {/* Tenant-only Routes */}
-          <Route
-            path="/tenant/dashboard"
-            element={
-              <RoleBasedRoute allowedRoles={['TENANT']}>
-                <TenantDashboardPage />
-              </RoleBasedRoute>
-            }
-          />
+            {/* Tenant Routes */}
+            <Route
+              path="/tenant/dashboard"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <TenantDashboardPage />
+                </RoleBasedRoute>
+              }
+            />
+          </Route>
         </Route>
 
         {/* 404 - Not Found */}

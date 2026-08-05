@@ -36,13 +36,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const loadUser = async () => {
       try {
         const storedUser = storage.get<User>(STORAGE_KEYS.USER);
-        const storedTokens = storage.get<AuthTokens>(STORAGE_KEYS.ACCESS_TOKEN);
+        const accessToken = storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN);
+        const refreshToken = storage.get<string>(STORAGE_KEYS.REFRESH_TOKEN);
 
-        if (storedUser && storedTokens) {
+        if (storedUser && accessToken) {
           setUser(storedUser);
           setTokens({
-            accessToken: storedTokens.accessToken,
-            refreshToken: storage.get<string>(STORAGE_KEYS.REFRESH_TOKEN) || '',
+            accessToken,
+            refreshToken: refreshToken || '',
           });
 
           // Validate token by fetching current user

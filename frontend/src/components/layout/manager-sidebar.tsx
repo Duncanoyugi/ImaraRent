@@ -7,8 +7,6 @@ import {
   Receipt,
   CreditCard,
   Wrench,
-  BarChart3,
-  Settings,
   Bell,
 } from 'lucide-react';
 import { Sidebar } from './sidebar';
@@ -71,11 +69,6 @@ const sections = [
         label: 'Maintenance',
         href: '/maintenance',
       },
-      {
-        icon: <BarChart3 className="h-5 w-5" />,
-        label: 'Reports',
-        href: '/reports',
-      },
     ],
   },
   {
@@ -86,15 +79,10 @@ const sections = [
         label: 'Notifications',
         href: '/notifications',
       },
-      {
-        icon: <Settings className="h-5 w-5" />,
-        label: 'Settings',
-        href: '/settings',
-      },
     ],
   },
 ];
 
-export const OwnerSidebar = () => {
+export const ManagerSidebar = () => {
   return <Sidebar sections={sections} />;
 };

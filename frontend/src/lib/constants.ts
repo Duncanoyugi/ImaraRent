@@ -62,7 +62,7 @@ export const API_ROUTES = {
     TENANT: '/payments/tenant/:tenantId',
   },
   MAINTENANCE: {
-    BASE: '/maintenance',
+    BASE: '/maintenance/tickets',
     TICKETS: '/maintenance/tickets',
     MY_TICKETS: '/maintenance/tickets/my',
     ASSIGN: '/maintenance/tickets/:id/assign',

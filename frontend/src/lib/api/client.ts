@@ -5,6 +5,7 @@ import axios, {
   type AxiosResponse,
 } from 'axios';
 import { type ApiError } from './api-types';
+import { storage } from '@/lib/storage/local-storage';
 
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
@@ -19,7 +20,7 @@ export const apiClient: AxiosInstance = axios.create({
 // Request interceptor for adding auth token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('accessToken');
+    const token = storage.get<string>('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -45,7 +46,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = storage.get<string>('refreshToken');
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
@@ -57,17 +58,17 @@ apiClient.interceptors.response.use(
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', newRefreshToken);
+        storage.set('accessToken', accessToken);
+        storage.set('refreshToken', newRefreshToken);
 
         // Retry original request with new token
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
         // Refresh failed - logout user
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        storage.remove('accessToken');
+        storage.remove('refreshToken');
+        storage.remove('user');
 
         // Redirect to login page
         window.location.href = '/login';
