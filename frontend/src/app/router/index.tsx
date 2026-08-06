@@ -19,11 +19,16 @@ const PropertyDetailPage = lazy(() => import('@/pages/owner/properties/[id]'));
 const UnitsPage = lazy(() => import('@/pages/owner/units'));
 const NewUnitPage = lazy(() => import('@/pages/owner/units/new'));
 const UnitDetailPage = lazy(() => import('@/pages/owner/units/[id]'));
+const TenantsPage = lazy(() => import('@/pages/owner/tenants'));
+const NewTenantPage = lazy(() => import('@/pages/owner/tenants/new'));
+const TenantDetailPage = lazy(() => import('@/pages/owner/tenants/[id]'));
+const TenantEditPage = lazy(() => import('@/pages/owner/tenants/edit'));
 
 // Manager pages
 const ManagerDashboardPage = lazy(() => import('@/pages/manager/dashboard'));
 const ManagerPropertiesPage = lazy(() => import('@/pages/manager/properties'));
 const ManagerUnitsPage = lazy(() => import('@/pages/manager/units'));
+const ManagerTenantsPage = lazy(() => import('@/pages/manager/tenants'));
 
 // Tenant pages
 const TenantDashboardPage = lazy(() => import('@/pages/tenant/dashboard'));
@@ -119,6 +124,38 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+            <Route
+              path="/tenants"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <TenantsPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/tenants/new"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <NewTenantPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/tenants/:id"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <TenantDetailPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/tenants/:id/edit"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <TenantEditPage />
+                </RoleBasedRoute>
+              }
+            />
 
             {/* Manager Routes */}
             <Route
@@ -142,6 +179,14 @@ export const AppRoutes = () => {
               element={
                 <RoleBasedRoute allowedRoles={['MANAGER']}>
                   <ManagerUnitsPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/tenants"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerTenantsPage />
                 </RoleBasedRoute>
               }
             />
