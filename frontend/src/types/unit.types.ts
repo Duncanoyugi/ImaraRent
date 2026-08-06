@@ -13,6 +13,7 @@ export interface Unit {
   property?: {
     id: string;
     name: string;
+    address: string;
   };
   currentTenant?: {
     id: string;

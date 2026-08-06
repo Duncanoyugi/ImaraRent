@@ -17,6 +17,7 @@ export interface Tenant {
     property: {
       id: string;
       name: string;
+      address: string;
     };
   };
   user?: {

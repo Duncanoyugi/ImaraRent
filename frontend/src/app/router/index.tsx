@@ -22,16 +22,21 @@ const UnitDetailPage = lazy(() => import('@/pages/owner/units/[id]'));
 const TenantsPage = lazy(() => import('@/pages/owner/tenants'));
 const NewTenantPage = lazy(() => import('@/pages/owner/tenants/new'));
 const TenantDetailPage = lazy(() => import('@/pages/owner/tenants/[id]'));
-const TenantEditPage = lazy(() => import('@/pages/owner/tenants/edit'));
+const LeasesPage = lazy(() => import('@/pages/owner/leases'));
+const NewLeasePage = lazy(() => import('@/pages/owner/leases/new'));
+const LeaseDetailPage = lazy(() => import('@/pages/owner/leases/[id]'));
+const LeaseEditPage = lazy(() => import('@/pages/owner/leases/edit'));
 
 // Manager pages
 const ManagerDashboardPage = lazy(() => import('@/pages/manager/dashboard'));
 const ManagerPropertiesPage = lazy(() => import('@/pages/manager/properties'));
 const ManagerUnitsPage = lazy(() => import('@/pages/manager/units'));
 const ManagerTenantsPage = lazy(() => import('@/pages/manager/tenants'));
+const ManagerLeasesPage = lazy(() => import('@/pages/manager/leases'));
 
 // Tenant pages
 const TenantDashboardPage = lazy(() => import('@/pages/tenant/dashboard'));
+const TenantLeasePage = lazy(() => import('@/pages/tenant/lease'));
 
 // Error pages
 const NotFoundPage = lazy(() => import('@/components/errors/not-found'));
@@ -149,10 +154,34 @@ export const AppRoutes = () => {
               }
             />
             <Route
-              path="/tenants/:id/edit"
+              path="/leases"
               element={
                 <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <TenantEditPage />
+                  <LeasesPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/leases/new"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <NewLeasePage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/leases/:id"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <LeaseDetailPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/leases/:id/edit"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <LeaseEditPage />
                 </RoleBasedRoute>
               }
             />
@@ -190,6 +219,14 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+            <Route
+              path="/leases"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerLeasesPage />
+                </RoleBasedRoute>
+              }
+            />
 
             {/* Tenant Routes */}
             <Route
@@ -197,6 +234,14 @@ export const AppRoutes = () => {
               element={
                 <RoleBasedRoute allowedRoles={['TENANT']}>
                   <TenantDashboardPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/lease"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <TenantLeasePage />
                 </RoleBasedRoute>
               }
             />
