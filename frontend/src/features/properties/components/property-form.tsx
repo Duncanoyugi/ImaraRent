@@ -39,7 +39,7 @@ export const PropertyForm = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Row 1: Property Name - Full Width */}
+      {/* Property Name */}
       <div className="space-y-2">
         <Label htmlFor="name" className="text-sm font-medium">
           Property Name <span className="text-error-500">*</span>
@@ -56,7 +56,7 @@ export const PropertyForm = ({
         </p>
       </div>
 
-      {/* Row 2: Address - Full Width */}
+      {/* Address */}
       <div className="space-y-2">
         <Label htmlFor="address" className="text-sm font-medium">
           Address <span className="text-error-500">*</span>
@@ -70,7 +70,7 @@ export const PropertyForm = ({
         />
       </div>
 
-      {/* Row 3: Description - Full Width */}
+      {/* Description */}
       <div className="space-y-2">
         <Label htmlFor="description" className="text-sm font-medium">
           Description
@@ -81,45 +81,48 @@ export const PropertyForm = ({
           rows={4}
           error={errors.description?.message}
           {...register('description')}
-          className="resize-none min-h-[100px]"
+          className="resize-none"
         />
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Optional: Add details about the property
+          Optional: Add details about the property, nearby amenities, or special features
         </p>
       </div>
 
-      {/* Row 4: City & County - 2 Columns */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="city" className="text-sm font-medium">
-            City <span className="text-error-500">*</span>
-          </Label>
-          <Input
-            id="city"
-            placeholder="e.g., Nairobi"
-            error={errors.city?.message}
-            {...register('city')}
-            className="h-11"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="county" className="text-sm font-medium">
-            County <span className="text-error-500">*</span>
-          </Label>
-          <Input
-            id="county"
-            placeholder="e.g., Nairobi"
-            error={errors.county?.message}
-            {...register('county')}
-            className="h-11"
-          />
+      {/* Location */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Location Details</Label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="city" className="text-sm text-neutral-600 dark:text-neutral-400">
+              City <span className="text-error-500">*</span>
+            </Label>
+            <Input
+              id="city"
+              placeholder="e.g., Nairobi"
+              error={errors.city?.message}
+              {...register('city')}
+              className="h-11"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="county" className="text-sm text-neutral-600 dark:text-neutral-400">
+              County <span className="text-error-500">*</span>
+            </Label>
+            <Input
+              id="county"
+              placeholder="e.g., Nairobi"
+              error={errors.county?.message}
+              {...register('county')}
+              className="h-11"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Row 5: Postal Code, Latitude, Longitude - 3 Columns */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* Postal Code & Coordinates */}
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="postalCode" className="text-sm font-medium">
+          <Label htmlFor="postalCode" className="text-sm text-neutral-600 dark:text-neutral-400">
             Postal Code
           </Label>
           <Input
@@ -131,7 +134,7 @@ export const PropertyForm = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="latitude" className="text-sm font-medium">
+          <Label htmlFor="latitude" className="text-sm text-neutral-600 dark:text-neutral-400">
             Latitude
           </Label>
           <Input
@@ -145,7 +148,7 @@ export const PropertyForm = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="longitude" className="text-sm font-medium">
+          <Label htmlFor="longitude" className="text-sm text-neutral-600 dark:text-neutral-400">
             Longitude
           </Label>
           <Input
@@ -160,22 +163,17 @@ export const PropertyForm = ({
         </div>
       </div>
 
-      {/* Row 6: Actions */}
+      {/* Form Actions */}
       <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
         <Button
           type="button"
           variant="outline"
           onClick={() => window.history.back()}
-          className="h-11 px-6"
+          className="h-11"
         >
           Cancel
         </Button>
-        <Button 
-          type="submit" 
-          loading={isLoading} 
-          disabled={isLoading} 
-          className="h-11 px-8"
-        >
+        <Button type="submit" loading={isLoading} disabled={isLoading} className="h-11">
           {isLoading ? 'Creating...' : submitLabel}
         </Button>
       </div>

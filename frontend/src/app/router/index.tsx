@@ -16,10 +16,14 @@ const OwnerDashboardPage = lazy(() => import('@/pages/owner/dashboard'));
 const PropertiesPage = lazy(() => import('@/pages/owner/properties'));
 const NewPropertyPage = lazy(() => import('@/pages/owner/properties/new'));
 const PropertyDetailPage = lazy(() => import('@/pages/owner/properties/[id]'));
+const UnitsPage = lazy(() => import('@/pages/owner/units'));
+const NewUnitPage = lazy(() => import('@/pages/owner/units/new'));
+const UnitDetailPage = lazy(() => import('@/pages/owner/units/[id]'));
 
 // Manager pages
 const ManagerDashboardPage = lazy(() => import('@/pages/manager/dashboard'));
 const ManagerPropertiesPage = lazy(() => import('@/pages/manager/properties'));
+const ManagerUnitsPage = lazy(() => import('@/pages/manager/units'));
 
 // Tenant pages
 const TenantDashboardPage = lazy(() => import('@/pages/tenant/dashboard'));
@@ -91,6 +95,30 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+            <Route
+              path="/units"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <UnitsPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/units/new"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <NewUnitPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/units/:id"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <UnitDetailPage />
+                </RoleBasedRoute>
+              }
+            />
 
             {/* Manager Routes */}
             <Route
@@ -106,6 +134,14 @@ export const AppRoutes = () => {
               element={
                 <RoleBasedRoute allowedRoles={['MANAGER']}>
                   <ManagerPropertiesPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/units"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerUnitsPage />
                 </RoleBasedRoute>
               }
             />
