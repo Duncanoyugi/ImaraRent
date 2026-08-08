@@ -50,9 +50,9 @@ export interface Lease {
 
 export interface CreateLeaseData {
   startDate: string;
-  endDate?: string;
+  endDate?: string | null;
   rentAmount: number;
-  depositAmount?: number;
+  depositAmount?: number | null;
   tenantId: string;
   unitId: string;
 }

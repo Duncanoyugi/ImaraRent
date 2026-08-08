@@ -19,6 +19,7 @@ interface UnitBulkFormProps {
   isLoading?: boolean;
   properties?: Property[];
   selectedPropertyId?: string;
+  hidePropertySelect?: boolean;
 }
 
 export const UnitBulkForm = ({
@@ -26,6 +27,7 @@ export const UnitBulkForm = ({
   isLoading = false,
   properties = [],
   selectedPropertyId,
+  hidePropertySelect = false,
 }: UnitBulkFormProps) => {
   const {
     control,
@@ -58,6 +60,7 @@ export const UnitBulkForm = ({
   });
 
   const addUnit = () => {
+    const currentPropertyId = watch('units.0.propertyId') || selectedPropertyId || '';
     append({
       number: '',
       floor: '',
@@ -66,14 +69,14 @@ export const UnitBulkForm = ({
       squareFeet: null,
       rentAmount: 0,
       status: 'VACANT',
-      propertyId: selectedPropertyId || '',
+      propertyId: currentPropertyId,
     });
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Property Select (if multiple properties available) */}
-      {properties.length > 1 && (
+      {!hidePropertySelect && properties.length > 0 && (
         <div className="space-y-2">
           <Label className="text-sm font-medium">
             Property <span className="text-error-500">*</span>
@@ -86,6 +89,7 @@ export const UnitBulkForm = ({
                 setValue(`units.${index}.propertyId`, value);
               });
             }}
+            defaultValue={selectedPropertyId}
           >
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Select a property" />
@@ -98,6 +102,9 @@ export const UnitBulkForm = ({
               ))}
             </SelectContent>
           </Select>
+          {errors.units?.[0]?.propertyId && (
+            <p className="text-sm text-error-500">{errors.units[0].propertyId?.message}</p>
+          )}
         </div>
       )}
 

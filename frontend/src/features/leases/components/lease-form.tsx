@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,13 +39,12 @@ export const LeaseForm = ({
   hideTenantSelect = false,
   hideUnitSelect = false,
 }: LeaseFormProps) => {
-  console.log('LeaseForm rendering', { tenants: tenants.length, units: units.length });
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
+    control,
   } = useForm<LeaseFormData>({
     resolver: zodResolver(leaseSchema),
     defaultValues: initialData || {
@@ -58,6 +57,7 @@ export const LeaseForm = ({
     },
   });
 
+  const { errors } = useFormState({ control });
   const startDate = watch('startDate');
 
   return (
@@ -76,7 +76,6 @@ export const LeaseForm = ({
               <SelectValue placeholder="Select a tenant" />
             </SelectTrigger>
             <SelectContent>
-              {console.log('Rendering tenant options', tenants.length)}
               {tenants.map((tenant) => (
                 <SelectItem key={tenant.id} value={tenant.id}>
                   {tenant.firstName} {tenant.lastName} - {tenant.email}
@@ -84,10 +83,22 @@ export const LeaseForm = ({
               ))}
             </SelectContent>
           </Select>
-          {errors.tenantId && (
-            <p className="text-sm text-error-500">{errors.tenantId.message}</p>
-          )}
         </div>
+      )}
+
+      {/* Hidden tenantId when tenant select is hidden (edit mode or no tenants) */}
+      {(hideTenantSelect || tenants.length === 0) && (
+        <input type="hidden" {...register('tenantId')} />
+      )}
+
+      {/* No tenants available message */}
+      {!hideTenantSelect && tenants.length === 0 && (
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">No active tenants available</p>
+      )}
+
+      {/* Tenant error message */}
+      {errors.tenantId && !hideTenantSelect && (
+        <p className="text-sm text-error-500">{errors.tenantId.message}</p>
       )}
 
       {/* Unit Selection */}
@@ -106,27 +117,29 @@ export const LeaseForm = ({
             <SelectContent>
               {units.map((unit) => (
                 <SelectItem key={unit.id} value={unit.id}>
-                  {unit.property?.name} - Unit {unit.number} 
+                  {unit.property?.name} - Unit {unit.number}
                   {unit.status === 'OCCUPIED' && ' (Occupied)'}
                   {unit.status === 'MAINTENANCE' && ' (Maintenance)'}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {errors.unitId && (
-            <p className="text-sm text-error-500">{errors.unitId.message}</p>
-          )}
         </div>
       )}
 
-      {/* Hidden tenantId when tenant select is hidden (edit mode) */}
-      {hideTenantSelect && (
-        <input type="hidden" {...register('tenantId')} />
+      {/* Hidden unitId when unit select is hidden (edit mode or no units) */}
+      {(hideUnitSelect || units.length === 0) && (
+        <input type="hidden" {...register('unitId')} />
       )}
 
-      {/* Hidden unitId when unit select is hidden (edit mode) */}
-      {hideUnitSelect && (
-        <input type="hidden" {...register('unitId')} />
+      {/* No units available message */}
+      {!hideUnitSelect && units.length === 0 && (
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">No available units</p>
+      )}
+
+      {/* Unit error message */}
+      {errors.unitId && !hideUnitSelect && (
+        <p className="text-sm text-error-500">{errors.unitId.message}</p>
       )}
 
       {/* Dates */}
@@ -208,3 +221,5 @@ export const LeaseForm = ({
     </form>
   );
 };
+
+export type { LeaseFormData };

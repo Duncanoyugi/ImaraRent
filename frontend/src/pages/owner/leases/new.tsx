@@ -1,30 +1,41 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LeaseForm } from '@/features/leases/components/lease-form';
+import { LeaseForm, type LeaseFormData } from '@/features/leases/components/lease-form';
 import { useCreateLease } from '@/features/leases/hooks/use-leases';
 import { useTenants } from '@/features/tenants/hooks/use-tenants';
 import { useUnits } from '@/features/units/hooks/use-units';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { showToast } from '@/app/providers/toast-provider';
 
 export default function NewLeasePage() {
-  console.log('NewLeasePage rendering');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tenantId = searchParams.get('tenantId') || undefined;
   const unitId = searchParams.get('unitId') || undefined;
 
   const createLease = useCreateLease();
-  const { data: tenants } = useTenants({ status: 'ACTIVE' });
-  const { data: units } = useUnits();
+  const { data: tenants, error: tenantsError } = useTenants({ status: 'ACTIVE' });
+  const { data: units, error: unitsError } = useUnits();
 
   const availableUnits = units?.filter(u => u.status === 'VACANT' || u.status === 'RESERVED') || [];
   const activeTenants = tenants?.filter(t => t.status === 'ACTIVE' && t.hasUserAccount) || [];
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: LeaseFormData) => {
+    console.log('Lease form submitted:', data);
     createLease.mutate(data, {
       onSuccess: (lease) => {
-        navigate(`/leases/${lease.id}`);
+        console.log('Lease created successfully:', lease);
+        if (lease?.id) {
+          navigate(`/leases/${lease.id}`);
+        } else {
+          navigate('/leases');
+        }
+      },
+      onError: (error) => {
+        console.error('Create lease error:', error);
+        const message = error?.response?.data?.message || 'Failed to create lease';
+        showToast.error('Creation Failed', message);
       },
     });
   };
@@ -58,6 +69,11 @@ export default function NewLeasePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
+          {(tenantsError || unitsError) && (
+            <div className="mb-4 rounded-md bg-error-50 p-4 text-sm text-error-500 dark:bg-error-500/10">
+              Failed to load required data. Please refresh the page.
+            </div>
+          )}
           <LeaseForm
             onSubmit={handleSubmit}
             isLoading={createLease.isPending}

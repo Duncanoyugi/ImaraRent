@@ -27,6 +27,19 @@ const NewLeasePage = lazy(() => import('@/pages/owner/leases/new'));
 const LeaseDetailPage = lazy(() => import('@/pages/owner/leases/[id]'));
 const LeaseEditPage = lazy(() => import('@/pages/owner/leases/edit'));
 
+// Owner Billing pages
+const InvoicesPage = lazy(() => import('@/pages/owner/billing/invoices'));
+const InvoiceDetailPage = lazy(() => import('@/pages/owner/billing/invoice/[id]'));
+const NewInvoicePage = lazy(() => import('@/pages/owner/billing/new'));
+
+// Owner Payment pages
+const PaymentsPage = lazy(() => import('@/pages/owner/payments'));
+const PaymentDetailPage = lazy(() => import('@/pages/owner/payments/[id]'));
+
+// Owner Maintenance pages
+const OwnerMaintenancePage = lazy(() => import('@/pages/owner/maintenance'));
+const OwnerTicketDetailPage = lazy(() => import('@/pages/owner/maintenance/[id]'));
+
 // Manager pages
 const ManagerDashboardPage = lazy(() => import('@/pages/manager/dashboard'));
 const ManagerPropertiesPage = lazy(() => import('@/pages/manager/properties'));
@@ -34,9 +47,31 @@ const ManagerUnitsPage = lazy(() => import('@/pages/manager/units'));
 const ManagerTenantsPage = lazy(() => import('@/pages/manager/tenants'));
 const ManagerLeasesPage = lazy(() => import('@/pages/manager/leases'));
 
+// Manager Billing pages
+const ManagerInvoicesPage = lazy(() => import('@/pages/manager/billing/invoices'));
+
+// Manager Payment pages
+const ManagerPaymentsPage = lazy(() => import('@/pages/manager/payments'));
+
+// Manager Maintenance pages
+const ManagerMaintenancePage = lazy(() => import('@/pages/manager/maintenance'));
+const ManagerTicketDetailPage = lazy(() => import('@/pages/manager/maintenance/[id]'));
+
 // Tenant pages
 const TenantDashboardPage = lazy(() => import('@/pages/tenant/dashboard'));
 const TenantLeasePage = lazy(() => import('@/pages/tenant/lease'));
+
+// Tenant Billing pages
+const TenantInvoicesPage = lazy(() => import('@/pages/tenant/invoices'));
+
+// Tenant Payment pages
+const TenantPaymentsPage = lazy(() => import('@/pages/tenant/payments'));
+const PayRentPage = lazy(() => import('@/pages/tenant/payments/pay'));
+
+// Tenant Maintenance pages
+const TenantMaintenancePage = lazy(() => import('@/pages/tenant/maintenance'));
+const NewTicketPage = lazy(() => import('@/pages/tenant/maintenance/new'));
+const TenantTicketDetailPage = lazy(() => import('@/pages/tenant/maintenance/[id]'));
 
 // Error pages
 const NotFoundPage = lazy(() => import('@/components/errors/not-found'));
@@ -185,6 +220,62 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+            <Route
+              path="/billing/invoices"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <InvoicesPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/billing/invoices/:id"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <InvoiceDetailPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/billing/invoices/new"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER']}>
+                  <NewInvoicePage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/payments"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <PaymentsPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/payments/:id"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <PaymentDetailPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/maintenance"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <OwnerMaintenancePage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/maintenance/:id"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <OwnerTicketDetailPage />
+                </RoleBasedRoute>
+              }
+            />
 
             {/* Manager Routes */}
             <Route
@@ -227,6 +318,38 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+            <Route
+              path="/billing/invoices"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerInvoicesPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/payments"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerPaymentsPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/maintenance"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerMaintenancePage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/maintenance/:id"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerTicketDetailPage />
+                </RoleBasedRoute>
+              }
+            />
 
             {/* Tenant Routes */}
             <Route
@@ -242,6 +365,54 @@ export const AppRoutes = () => {
               element={
                 <RoleBasedRoute allowedRoles={['TENANT']}>
                   <TenantLeasePage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/invoices"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <TenantInvoicesPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/payments"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <TenantPaymentsPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/payments/pay"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <PayRentPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/maintenance"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <TenantMaintenancePage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/maintenance/new"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <NewTicketPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/maintenance/:id"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <TenantTicketDetailPage />
                 </RoleBasedRoute>
               }
             />

@@ -93,6 +93,7 @@ export default function NewUnitPage() {
                 isLoading={bulkCreateUnits.isPending}
                 properties={properties}
                 selectedPropertyId={propertyId}
+                hidePropertySelect={!!propertyId}
               />
             </TabsContent>
           </Tabs>
