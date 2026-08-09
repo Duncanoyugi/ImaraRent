@@ -11,3 +11,4 @@ export * from './dropdown-menu';
 export * from './skeleton';
 export * from './separator';
 export * from './tooltip';
+export * from './progress';
