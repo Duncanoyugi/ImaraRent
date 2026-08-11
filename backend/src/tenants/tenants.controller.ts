@@ -21,6 +21,7 @@ import { TenantsService } from './tenants.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { UserRole, TenantStatus } from '@prisma/client';
 import { CreateTenantDto, UpdateTenantDto, AcceptInvitationDto } from './dto';
 
@@ -105,12 +106,23 @@ export class TenantsController {
   }
 
   @Post('accept-invitation')
+  @Public()
   @ApiOperation({ summary: 'Accept invitation and create user account' })
   @ApiResponse({ status: 201, description: 'Invitation accepted successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired invitation' })
   @ApiResponse({ status: 409, description: 'User already exists' })
   async acceptInvitation(@Body() dto: AcceptInvitationDto) {
     return this.tenantsService.acceptInvitation(dto);
+  }
+
+  @Get('invitation/validate')
+  @Public()
+  @ApiOperation({ summary: 'Validate invitation token' })
+  @ApiQuery({ name: 'token', type: String, required: true })
+  @ApiResponse({ status: 200, description: 'Invitation is valid' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired invitation' })
+  async validateInvitation(@Query('token') token: string) {
+    return this.tenantsService.validateInvitation(token);
   }
 
   @Post(':id/resend-invitation')

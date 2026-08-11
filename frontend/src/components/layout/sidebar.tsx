@@ -3,6 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/shared/logo';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
+import { useLogout } from '@/features/auth/hooks/use-logout';
 
 interface SidebarItem {
   icon: ReactNode;
@@ -23,6 +26,7 @@ interface SidebarProps {
 
 export const Sidebar = ({ sections, className }: SidebarProps) => {
   const location = useLocation();
+  const logout = useLogout();
 
   return (
     <aside
@@ -79,6 +83,17 @@ export const Sidebar = ({ sections, className }: SidebarProps) => {
       </nav>
       <Separator />
       <div className="p-4">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 text-neutral-600 hover:text-error-600 dark:text-neutral-400 dark:hover:text-error-400"
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
+        >
+          <LogOut className="h-4 w-4" />
+          {logout.isPending ? 'Logging out...' : 'Logout'}
+        </Button>
+      </div>
+      <div className="p-4 pt-0">
         <p className="text-xs text-neutral-400 dark:text-neutral-500">
           ImaraRent v1.0.0
         </p>

@@ -319,6 +319,36 @@ export class TenantsService {
     return result;
   }
 
+  async validateInvitation(token: string) {
+    const tenant = await this.prisma.tenant.findFirst({
+      where: {
+        invitationToken: token,
+        status: TenantStatus.PENDING,
+        invitationExpires: {
+          gt: new Date(),
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        organization: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!tenant) {
+      throw new BadRequestException('Invalid or expired invitation token');
+    }
+
+    return { valid: true, tenant };
+  }
+
   async resendInvitation(id: string, organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
 

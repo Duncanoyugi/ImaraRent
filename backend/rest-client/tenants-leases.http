@@ -12,8 +12,8 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "duncan@imara.com",
-  "password": "StrongPassword123!"
+  "email": "duncanoyugi2001@gmail.com",
+  "password": "Dante@254"
 }
 
 ### Store tokens
@@ -23,7 +23,7 @@ Content-Type: {{contentType}}
 ### Get a property with units first
 # @name getProperties
 GET {{baseUrl}}/properties
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg2NDUxMjU5LCJleHAiOjE3ODY0NTIxNTl9.7QZPkaCPY9av5AC9DMG7H5Y7et-TN_PUT__i_z52OjE
 
 ### Store property and unit IDs
 @propertyId = {{getProperties.response.body[0].id}}
@@ -36,17 +36,17 @@ Authorization: Bearer {{authToken}}
 ### 1. Create tenant with invitation
 # @name createTenant
 POST {{baseUrl}}/tenants
-Authorization: Bearer {{authToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXM4eGF0Y3UwMDAxajB1M2IyNW5yOTVwIiwiZW1haWwiOiJkdW5jYW5veXVnaTIwMDFAZ21haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwib3JnYW5pemF0aW9uSWQiOiJjbXM4eGF0MzkwMDAwajB1Mzd3ZWFhMjVoIiwiaWF0IjoxNzg2NDUxMjU5LCJleHAiOjE3ODY0NTIxNTl9.7QZPkaCPY9av5AC9DMG7H5Y7et-TN_PUT__i_z52OjE
 Content-Type: {{contentType}}
 
 {
   "firstName": "Mary",
-  "lastName": "Wambui",
-  "email": "mary.wambui@imara.com",
+  "lastName": "Moraa",
+  "email": "moraa@gmail.com",
   "phone": "+254712345678",
   "nationalId": "12345678",
   "dateOfBirth": "1990-01-15",
-  "unitId": "{{unitId}}"
+  "unitId": "cmsk5x88e0003u3icby0yt4qz"
 }
 
 ### Store tenant ID and token
@@ -84,8 +84,8 @@ POST {{baseUrl}}/tenants/accept-invitation
 Content-Type: {{contentType}}
 
 {
-  "token": "{{invitationToken}}",
-  "password": "MaryPassword123!"
+  "token": "7dc35321d1abc5932539fdbeac612393fcccf50f30be11f9f0a73c8f294ca1e2",
+  "password": "Moraa@1234"
 }
 
 ### 8. Login as tenant
