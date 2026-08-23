@@ -1,13 +1,9 @@
-import { useAuth } from '@/features/auth/hooks/use-auth';
-import { useTenantInvoices } from '@/features/billing/hooks/use-billing';
+import { useTenantInvoices } from '@/features/tenant-dashboard/hooks/use-tenant-dashboard';
 import { InvoiceList } from '@/features/billing/components/invoice-list';
 import { PageLoader } from '@/components/shared/page-loader';
 
 export default function TenantInvoicesPage() {
-  const { user } = useAuth();
-  const tenantId = user?.tenantProfile?.id;
-
-  const { data: invoices, isLoading } = useTenantInvoices(tenantId || '');
+  const { data: invoices, isLoading } = useTenantInvoices();
 
   if (isLoading) {
     return <PageLoader />;
@@ -28,6 +24,7 @@ export default function TenantInvoicesPage() {
         invoices={invoices || []}
         isLoading={isLoading}
         showGenerate={false}
+        viewPath="/invoices"
       />
     </div>
   );

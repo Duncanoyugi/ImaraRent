@@ -170,7 +170,7 @@ export const PropertyDetails = ({ property }: PropertyDetailsProps) => {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Units</CardTitle>
           <Button asChild size="sm">
-            <Link to={`/properties/${property.id}/units/new`}>
+            <Link to={`/units/new?propertyId=${property.id}`}>
               <Plus className="mr-2 h-4 w-4" />
               Add Unit
             </Link>
@@ -232,7 +232,7 @@ export const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                 No units added yet
               </p>
               <Button asChild variant="link" className="mt-2">
-                <Link to={`/properties/${property.id}/units/new`}>
+            <Link to={`/units/new?propertyId=${property.id}`}>
                   Add your first unit
                 </Link>
               </Button>

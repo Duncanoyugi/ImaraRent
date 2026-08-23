@@ -4,7 +4,6 @@ import {
   IsEmail,
   IsPhoneNumber,
   IsOptional,
-  IsUUID,
   ValidateIf,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -42,12 +41,12 @@ export class SendNotificationDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   tenantId?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   userId?: string;
 
   @ApiProperty({ required: false })

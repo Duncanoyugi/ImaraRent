@@ -28,6 +28,7 @@ interface PaymentHistoryProps {
   isLoading?: boolean;
   showManualPayment?: boolean;
   onManualPayment?: () => void;
+  viewPath?: string;
 }
 
 const methodLabels = {
@@ -42,6 +43,7 @@ export const PaymentHistory = ({
   isLoading = false,
   showManualPayment = false,
   onManualPayment,
+  viewPath = '/payments',
 }: PaymentHistoryProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -168,7 +170,7 @@ export const PaymentHistory = ({
                 <TableRow
                   key={payment.id}
                   className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-                  onClick={() => window.location.href = `/payments/${payment.id}`}
+                  onClick={() => window.location.href = `${viewPath}/${payment.id}`}
                 >
                   <TableCell>
                     <div>
@@ -221,7 +223,7 @@ export const PaymentHistory = ({
                   </TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm">
-                      <Link to={`/payments/${payment.id}`}>
+                       <Link to={`${viewPath}/${payment.id}`}>
                         View
                       </Link>
                     </Button>

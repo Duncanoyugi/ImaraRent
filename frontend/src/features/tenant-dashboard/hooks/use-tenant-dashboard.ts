@@ -38,6 +38,24 @@ export const useTenantLease = () => {
   });
 };
 
+export const useTenantInvoice = (id: string) => {
+  return useQuery({
+    queryKey: [...DASHBOARD_QUERY_KEY, 'invoice', id],
+    queryFn: () => tenantDashboardService.getInvoice(id),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useTenantPayment = (id: string) => {
+  return useQuery({
+    queryKey: [...DASHBOARD_QUERY_KEY, 'payment', id],
+    queryFn: () => tenantDashboardService.getPayment(id),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
 export const useTenantBalance = () => {
   return useQuery({
     queryKey: [...DASHBOARD_QUERY_KEY, 'balance'],

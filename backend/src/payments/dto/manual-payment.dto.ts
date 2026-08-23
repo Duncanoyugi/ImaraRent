@@ -1,7 +1,6 @@
 import {
   IsString,
   IsNumber,
-  IsUUID,
   IsEnum,
   Min,
   IsOptional,
@@ -12,7 +11,7 @@ import { Type } from 'class-transformer';
 
 export class ManualPaymentDto {
   @ApiProperty({ example: 'cm8tenant123456' })
-  @IsUUID()
+  @IsString()
   tenantId: string;
 
   @ApiProperty({ example: 45000 })

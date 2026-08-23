@@ -3,7 +3,6 @@ import { CreateTicketDto } from './create-ticket.dto';
 import {
   IsOptional,
   IsEnum,
-  IsUUID,
   IsNumber,
   Min,
   IsString,
@@ -25,7 +24,7 @@ export class UpdateTicketDto extends PartialType(CreateTicketDto) {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   assignedToId?: string;
 
   @ApiProperty({ required: false })

@@ -1,6 +1,5 @@
 import {
   IsString,
-  IsUUID,
   IsOptional,
   IsEnum,
   MinLength,
@@ -33,6 +32,6 @@ export class CreateTicketDto {
   priority?: MaintenancePriority;
 
   @ApiProperty({ example: 'cm8unit123456' })
-  @IsUUID()
+  @IsString()
   unitId: string;
 }

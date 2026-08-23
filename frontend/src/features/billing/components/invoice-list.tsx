@@ -30,6 +30,7 @@ interface InvoiceListProps {
   showGenerate?: boolean;
   onGenerate?: () => void;
   onVoid?: (id: string, reason?: string) => void;
+  viewPath?: string;
 }
 
 export const InvoiceList = ({
@@ -38,6 +39,7 @@ export const InvoiceList = ({
   showGenerate = false,
   onGenerate,
   onVoid,
+  viewPath = '/billing/invoices',
 }: InvoiceListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -170,7 +172,7 @@ export const InvoiceList = ({
                 <TableRow
                   key={invoice.id}
                   className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-                  onClick={() => window.location.href = `/billing/invoices/${invoice.id}`}
+                  onClick={() => window.location.href = `${viewPath}/${invoice.id}`}
                 >
                   <TableCell>
                     <div>
@@ -243,7 +245,7 @@ export const InvoiceList = ({
                         </Button>
                       )}
                       <Button asChild variant="outline" size="sm">
-                        <Link to={`/billing/invoices/${invoice.id}`}>
+                        <Link to={`${viewPath}/${invoice.id}`}>
                           View
                         </Link>
                       </Button>

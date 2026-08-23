@@ -23,9 +23,17 @@ interface InvoiceDetailsProps {
   invoice: Invoice;
   onVoid?: () => void;
   onPay?: () => void;
+  backPath?: string;
+  showOwnerLinks?: boolean;
 }
 
-export const InvoiceDetails = ({ invoice, onVoid, onPay }: InvoiceDetailsProps) => {
+export const InvoiceDetails = ({
+  invoice,
+  onVoid,
+  onPay,
+  backPath = '/billing/invoices',
+  showOwnerLinks = true,
+}: InvoiceDetailsProps) => {
   const navigate = useNavigate();
 
   const isOverdue = new Date(invoice.dueDate) < new Date() && invoice.status !== 'PAID';
@@ -35,12 +43,12 @@ export const InvoiceDetails = ({ invoice, onVoid, onPay }: InvoiceDetailsProps) 
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/billing/invoices')}
-            className="h-9 w-9 shrink-0"
-          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(backPath)}
+              className="h-9 w-9 shrink-0"
+            >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -67,7 +75,7 @@ export const InvoiceDetails = ({ invoice, onVoid, onPay }: InvoiceDetailsProps) 
                   Pay Now
                 </Button>
               )}
-              {onVoid && (
+              {onVoid && showOwnerLinks && (
                 <Button variant="destructive" onClick={onVoid} className="gap-2">
                   <XCircle className="h-4 w-4" />
                   Void Invoice
@@ -188,11 +196,13 @@ export const InvoiceDetails = ({ invoice, onVoid, onPay }: InvoiceDetailsProps) 
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {invoice.tenant.phone}
                 </p>
-                <Button asChild variant="link" className="px-0">
-                  <Link to={`/tenants/${invoice.tenantId}`}>
-                    View Tenant Profile
-                  </Link>
-                </Button>
+                {showOwnerLinks && (
+                  <Button asChild variant="link" className="px-0">
+                    <Link to={`/tenants/${invoice.tenantId}`}>
+                      View Tenant Profile
+                    </Link>
+                  </Button>
+                )}
               </div>
             ) : (
               <p className="text-sm text-neutral-500">Tenant information not available</p>
@@ -222,11 +232,13 @@ export const InvoiceDetails = ({ invoice, onVoid, onPay }: InvoiceDetailsProps) 
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Rent: {formatCurrency(invoice.lease.rentAmount)}/month
                 </p>
-                <Button asChild variant="link" className="px-0">
-                  <Link to={`/leases/${invoice.leaseId}`}>
-                    View Lease
-                  </Link>
-                </Button>
+                {showOwnerLinks && (
+                  <Button asChild variant="link" className="px-0">
+                    <Link to={`/leases/${invoice.leaseId}`}>
+                      View Lease
+                    </Link>
+                  </Button>
+                )}
               </div>
             ) : (
               <p className="text-sm text-neutral-500">Lease information not available</p>

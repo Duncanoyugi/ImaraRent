@@ -21,9 +21,17 @@ interface LeaseDetailsProps {
   lease: Lease;
   onActivate?: () => void;
   onTerminate?: () => void;
+  backPath?: string;
+  showOwnerLinks?: boolean;
 }
 
-export const LeaseDetails = ({ lease, onActivate, onTerminate }: LeaseDetailsProps) => {
+export const LeaseDetails = ({
+  lease,
+  onActivate,
+  onTerminate,
+  backPath = '/leases',
+  showOwnerLinks = true,
+}: LeaseDetailsProps) => {
   const navigate = useNavigate();
 
   return (
@@ -31,12 +39,12 @@ export const LeaseDetails = ({ lease, onActivate, onTerminate }: LeaseDetailsPro
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/leases')}
-            className="h-9 w-9 shrink-0"
-          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(backPath)}
+              className="h-9 w-9 shrink-0"
+            >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -67,7 +75,7 @@ export const LeaseDetails = ({ lease, onActivate, onTerminate }: LeaseDetailsPro
               Terminate Lease
             </Button>
           )}
-          {lease.status === 'DRAFT' && (
+          {lease.status === 'DRAFT' && showOwnerLinks && (
             <Button asChild variant="outline">
               <Link to={`/leases/${lease.id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
@@ -172,11 +180,13 @@ export const LeaseDetails = ({ lease, onActivate, onTerminate }: LeaseDetailsPro
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {lease.tenant.phone}
                 </p>
-                <Button asChild variant="link" className="px-0">
-                  <Link to={`/tenants/${lease.tenantId}`}>
-                    View Tenant Profile
-                  </Link>
-                </Button>
+                {showOwnerLinks && (
+                  <Button asChild variant="link" className="px-0">
+                    <Link to={`/tenants/${lease.tenantId}`}>
+                      View Tenant Profile
+                    </Link>
+                  </Button>
+                )}
               </div>
             ) : (
               <p className="text-sm text-neutral-500">Tenant information not available</p>
@@ -203,11 +213,13 @@ export const LeaseDetails = ({ lease, onActivate, onTerminate }: LeaseDetailsPro
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {lease.unit.property?.address}
                 </p>
-                <Button asChild variant="link" className="px-0">
-                  <Link to={`/units/${lease.unitId}`}>
-                    View Unit Details
-                  </Link>
-                </Button>
+                {showOwnerLinks && (
+                  <Button asChild variant="link" className="px-0">
+                    <Link to={`/units/${lease.unitId}`}>
+                      View Unit Details
+                    </Link>
+                  </Button>
+                )}
               </div>
             ) : (
               <p className="text-sm text-neutral-500">Unit information not available</p>

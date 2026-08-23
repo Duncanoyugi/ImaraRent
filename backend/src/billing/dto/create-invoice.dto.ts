@@ -4,7 +4,6 @@ import {
   IsNumber,
   IsOptional,
   Min,
-  IsUUID,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -26,6 +25,6 @@ export class CreateInvoiceDto {
   description?: string;
 
   @ApiProperty({ example: 'cm8lease123456' })
-  @IsUUID()
+  @IsString()
   leaseId: string;
 }

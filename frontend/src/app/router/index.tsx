@@ -1,10 +1,13 @@
 import { Suspense, lazy } from 'react';
+import { type ReactNode } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { AppLayout } from '@/components/layout';
 import { ProtectedRoute } from './protected-route';
 import { RoleBasedRoute } from './role-based-route';
 import { PublicRoute } from './public-route';
+import { useAuth } from '@/features/auth/hooks/use-auth';
+import { type UserRole } from '@/types/user.types';
 
 // Lazy load pages
 const LoginPage = lazy(() => import('@/pages/auth/login'));
@@ -88,6 +91,10 @@ const TenantMaintenancePage = lazy(() => import('@/pages/tenant/maintenance'));
 const NewTicketPage = lazy(() => import('@/pages/tenant/maintenance/new'));
 const TenantTicketDetailPage = lazy(() => import('@/pages/tenant/maintenance/[id]'));
 
+// Tenant Billing / Payment detail pages
+const TenantInvoiceDetailPage = lazy(() => import('@/pages/tenant/invoices/[id]'));
+const TenantPaymentDetailPage = lazy(() => import('@/pages/tenant/payments/[id]'));
+
 // Tenant Settings pages
 const TenantNotificationsPage = lazy(() => import('@/pages/tenant/notifications'));
 const TenantProfilePage = lazy(() => import('@/pages/tenant/profile'));
@@ -100,6 +107,27 @@ const PageLoader = () => (
     <LoadingSpinner size="lg" />
   </div>
 );
+
+/**
+ * Renders the page element matching the current user's role for a shared path.
+ * Used so that routes like `/dashboard`, `/payments` and `/maintenance` resolve to the
+ * correct role-specific page instead of always matching the first declared (owner) route.
+ */
+const RolePage = ({ pages }: { pages: Partial<Record<UserRole, ReactNode>> }) => {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const page = user.role ? pages[user.role] : undefined;
+
+  if (!page) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{page}</>;
+};
 
 export const AppRoutes = () => {
   return (
@@ -116,19 +144,21 @@ export const AppRoutes = () => {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            {/* Dashboard - All roles */}
+            {/* Dashboard - role aware */}
             <Route
               path="/dashboard"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER', 'TENANT']}>
-                  <OwnerDashboardPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <OwnerDashboardPage />,
+                    MANAGER: <ManagerDashboardPage />,
+                    TENANT: <TenantDashboardPage />,
+                  }}
+                />
               }
             />
-            
-            {/* ============================================ */}
-            {/* OWNER ROUTES */}
-            {/* ============================================ */}
+
+            {/* Role-prefixed dashboards */}
             <Route
               path="/owner/dashboard"
               element={
@@ -137,14 +167,35 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
-            
-            {/* Management */}
+            <Route
+              path="/manager/dashboard"
+              element={
+                <RoleBasedRoute allowedRoles={['MANAGER']}>
+                  <ManagerDashboardPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/tenant/dashboard"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <TenantDashboardPage />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* ============================================ */}
+            {/* PROPERTIES */}
+            {/* ============================================ */}
             <Route
               path="/properties"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <PropertiesPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <PropertiesPage />,
+                    MANAGER: <ManagerPropertiesPage />,
+                  }}
+                />
               }
             />
             <Route
@@ -163,12 +214,19 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+
+            {/* ============================================ */}
+            {/* UNITS */}
+            {/* ============================================ */}
             <Route
               path="/units"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <UnitsPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <UnitsPage />,
+                    MANAGER: <ManagerUnitsPage />,
+                  }}
+                />
               }
             />
             <Route
@@ -187,12 +245,19 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+
+            {/* ============================================ */}
+            {/* TENANTS */}
+            {/* ============================================ */}
             <Route
               path="/tenants"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <TenantsPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <TenantsPage />,
+                    MANAGER: <ManagerTenantsPage />,
+                  }}
+                />
               }
             />
             <Route
@@ -211,12 +276,19 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+
+            {/* ============================================ */}
+            {/* LEASES */}
+            {/* ============================================ */}
             <Route
               path="/leases"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <LeasesPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <LeasesPage />,
+                    MANAGER: <ManagerLeasesPage />,
+                  }}
+                />
               }
             />
             <Route
@@ -244,13 +316,18 @@ export const AppRoutes = () => {
               }
             />
 
-            {/* Finance */}
+            {/* ============================================ */}
+            {/* BILLING / INVOICES */}
+            {/* ============================================ */}
             <Route
               path="/billing/invoices"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <InvoicesPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <InvoicesPage />,
+                    MANAGER: <ManagerInvoicesPage />,
+                  }}
+                />
               }
             />
             <Route
@@ -269,42 +346,81 @@ export const AppRoutes = () => {
                 </RoleBasedRoute>
               }
             />
+
+            {/* ============================================ */}
+            {/* PAYMENTS */}
+            {/* ============================================ */}
             <Route
               path="/payments"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <PaymentsPage />
+                <RolePage
+                  pages={{
+                    OWNER: <PaymentsPage />,
+                    MANAGER: <ManagerPaymentsPage />,
+                    TENANT: <TenantPaymentsPage />,
+                  }}
+                />
+              }
+            />
+            <Route
+              path="/payments/pay"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <PayRentPage />
                 </RoleBasedRoute>
               }
             />
             <Route
               path="/payments/:id"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <PaymentDetailPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <PaymentDetailPage />,
+                    TENANT: <TenantPaymentDetailPage />,
+                  }}
+                />
               }
             />
 
-            {/* Operations */}
+            {/* ============================================ */}
+            {/* MAINTENANCE */}
+            {/* ============================================ */}
             <Route
               path="/maintenance"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <OwnerMaintenancePage />
+                <RolePage
+                  pages={{
+                    OWNER: <OwnerMaintenancePage />,
+                    MANAGER: <ManagerMaintenancePage />,
+                    TENANT: <TenantMaintenancePage />,
+                  }}
+                />
+              }
+            />
+            <Route
+              path="/maintenance/new"
+              element={
+                <RoleBasedRoute allowedRoles={['TENANT']}>
+                  <NewTicketPage />
                 </RoleBasedRoute>
               }
             />
             <Route
               path="/maintenance/:id"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <OwnerTicketDetailPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <OwnerTicketDetailPage />,
+                    MANAGER: <ManagerTicketDetailPage />,
+                    TENANT: <TenantTicketDetailPage />,
+                  }}
+                />
               }
             />
 
-            {/* Reports */}
+            {/* ============================================ */}
+            {/* REPORTS (OWNER ONLY) */}
+            {/* ============================================ */}
             <Route
               path="/reports"
               element={
@@ -354,7 +470,9 @@ export const AppRoutes = () => {
               }
             />
 
-            {/* Settings */}
+            {/* ============================================ */}
+            {/* SETTINGS / PROFILE */}
+            {/* ============================================ */}
             <Route
               path="/settings"
               element={
@@ -366,115 +484,19 @@ export const AppRoutes = () => {
             <Route
               path="/profile"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER', 'TENANT']}>
-                  <OwnerProfilePage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <OwnerProfilePage />,
+                    MANAGER: <ManagerProfilePage />,
+                    TENANT: <TenantProfilePage />,
+                  }}
+                />
               }
             />
 
             {/* ============================================ */}
-            {/* MANAGER ROUTES */}
+            {/* TENANT-SPECIFIC ROUTES */}
             {/* ============================================ */}
-            <Route
-              path="/manager/dashboard"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerDashboardPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/properties"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerPropertiesPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/units"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerUnitsPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/tenants"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerTenantsPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/leases"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerLeasesPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/billing/invoices"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerInvoicesPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/payments"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerPaymentsPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/maintenance"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerMaintenancePage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/maintenance/:id"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerTicketDetailPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <RoleBasedRoute allowedRoles={['MANAGER']}>
-                  <ManagerProfilePage />
-                </RoleBasedRoute>
-              }
-            />
-
-            {/* ============================================ */}
-            {/* TENANT ROUTES */}
-            {/* ============================================ */}
-            <Route
-              path="/tenant/dashboard"
-              element={
-                <RoleBasedRoute allowedRoles={['TENANT']}>
-                  <TenantDashboardPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <RoleBasedRoute allowedRoles={['TENANT']}>
-                  <TenantDashboardPage />
-                </RoleBasedRoute>
-              }
-            />
             <Route
               path="/lease"
               element={
@@ -492,42 +514,10 @@ export const AppRoutes = () => {
               }
             />
             <Route
-              path="/payments"
+              path="/invoices/:id"
               element={
                 <RoleBasedRoute allowedRoles={['TENANT']}>
-                  <TenantPaymentsPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/payments/pay"
-              element={
-                <RoleBasedRoute allowedRoles={['TENANT']}>
-                  <PayRentPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/maintenance"
-              element={
-                <RoleBasedRoute allowedRoles={['TENANT']}>
-                  <TenantMaintenancePage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/maintenance/new"
-              element={
-                <RoleBasedRoute allowedRoles={['TENANT']}>
-                  <NewTicketPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/maintenance/:id"
-              element={
-                <RoleBasedRoute allowedRoles={['TENANT']}>
-                  <TenantTicketDetailPage />
+                  <TenantInvoiceDetailPage />
                 </RoleBasedRoute>
               }
             />
@@ -536,14 +526,6 @@ export const AppRoutes = () => {
               element={
                 <RoleBasedRoute allowedRoles={['TENANT']}>
                   <TenantNotificationsPage />
-                </RoleBasedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <RoleBasedRoute allowedRoles={['TENANT']}>
-                  <TenantProfilePage />
                 </RoleBasedRoute>
               }
             />

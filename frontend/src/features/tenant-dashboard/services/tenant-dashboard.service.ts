@@ -1,6 +1,9 @@
 import { api } from '@/lib/api/client';
 import { API_ROUTES } from '@/lib/constants';
-import type { TenantDashboardData, TenantInvoice, TenantPayment, TenantLease, TenantMaintenanceTicket, TenantNotification } from '../types/tenant-dashboard.types';
+import type { TenantDashboardData, TenantMaintenanceTicket, TenantNotification } from '../types/tenant-dashboard.types';
+import type { Invoice } from '@/features/billing/types/billing.types';
+import type { Payment } from '@/features/payments/types/payment.types';
+import type { Lease } from '@/features/leases/types/lease.types';
 
 export const tenantDashboardService = {
   getDashboard: async (): Promise<TenantDashboardData> => {
@@ -8,30 +11,40 @@ export const tenantDashboardService = {
     return response;
   },
 
-  getInvoices: async (limit?: number, offset?: number): Promise<TenantInvoice[]> => {
+  getInvoices: async (limit?: number, offset?: number): Promise<Invoice[]> => {
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit.toString());
     if (offset) params.append('offset', offset.toString());
     const url = params.toString() 
       ? `${API_ROUTES.TENANT_PORTAL.INVOICES}?${params}`
       : API_ROUTES.TENANT_PORTAL.INVOICES;
-    const response = await api.get<TenantInvoice[]>(url);
+    const response = await api.get<Invoice[]>(url);
     return response;
   },
 
-  getPayments: async (limit?: number, offset?: number): Promise<TenantPayment[]> => {
+  getPayments: async (limit?: number, offset?: number): Promise<Payment[]> => {
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit.toString());
     if (offset) params.append('offset', offset.toString());
     const url = params.toString() 
       ? `${API_ROUTES.TENANT_PORTAL.PAYMENTS}?${params}`
       : API_ROUTES.TENANT_PORTAL.PAYMENTS;
-    const response = await api.get<TenantPayment[]>(url);
+    const response = await api.get<Payment[]>(url);
     return response;
   },
 
-  getLease: async (): Promise<TenantLease> => {
-    const response = await api.get<TenantLease>(API_ROUTES.TENANT_PORTAL.LEASE);
+  getLease: async (): Promise<Lease> => {
+    const response = await api.get<Lease>(API_ROUTES.TENANT_PORTAL.LEASE);
+    return response;
+  },
+
+  getInvoice: async (id: string): Promise<Invoice> => {
+    const response = await api.get<Invoice>(`${API_ROUTES.TENANT_PORTAL.INVOICES}/${id}`);
+    return response;
+  },
+
+  getPayment: async (id: string): Promise<Payment> => {
+    const response = await api.get<Payment>(`${API_ROUTES.TENANT_PORTAL.PAYMENTS}/${id}`);
     return response;
   },
 

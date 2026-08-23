@@ -1,30 +1,16 @@
-import { useAuth } from '@/features/auth/hooks/use-auth';
-import { useTenantByUnit } from '@/features/tenants/hooks/use-tenants';
-import { useLease } from '@/features/leases/hooks/use-leases';
+import { useTenantLease } from '@/features/tenant-dashboard/hooks/use-tenant-dashboard';
 import { PageLoader } from '@/components/shared/page-loader';
 import { LeaseDetails } from '@/features/leases/components/lease-details';
 import { Home } from 'lucide-react';
 
 export default function TenantLeasePage() {
-  const { user } = useAuth();
-
-  const tenantProfile = user?.tenantProfile;
-  const { data: tenant, isLoading: tenantLoading } = useTenantByUnit(
-    tenantProfile?.unitId || ''
-  );
-
-  const activeLeaseId = tenant?.activeLease?.id;
-  const { data: lease, isLoading: leaseLoading } = useLease(
-    activeLeaseId || ''
-  );
-
-  const isLoading = tenantLoading || leaseLoading;
+  const { data: lease, isLoading } = useTenantLease();
 
   if (isLoading) {
     return <PageLoader />;
   }
 
-  if (!tenant || !lease) {
+  if (!lease) {
     return (
       <div className="flex h-[400px] items-center justify-center">
         <div className="text-center">
@@ -42,25 +28,7 @@ export default function TenantLeasePage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-gradient-to-r from-brand-600 to-brand-400 p-6 text-white">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">My Lease</h1>
-            <p className="text-brand-50">
-              {tenant.unit?.property?.name} - Unit {tenant.unit?.number}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 rounded-lg bg-white/20 px-3 py-1.5">
-              <span className="text-sm font-medium">
-                {tenant.unit?.property?.address}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <LeaseDetails lease={lease} />
+      <LeaseDetails lease={lease} backPath="/lease" showOwnerLinks={false} />
     </div>
   );
 }

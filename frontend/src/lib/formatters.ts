@@ -1,4 +1,3 @@
-// Date formatting
 export const formatDate = (
   date: string | Date | null | undefined,
   options: Intl.DateTimeFormatOptions = {}

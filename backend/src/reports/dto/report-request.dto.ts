@@ -1,4 +1,4 @@
-import { IsOptional, IsDateString, IsEnum, IsUUID } from 'class-validator';
+import { IsOptional, IsDateString, IsEnum, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum ReportPeriod {
@@ -32,12 +32,12 @@ export class ReportRequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   propertyId?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   unitId?: string;
 
   @ApiProperty({ enum: ReportFormat, default: ReportFormat.JSON })

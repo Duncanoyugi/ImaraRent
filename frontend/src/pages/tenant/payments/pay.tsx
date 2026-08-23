@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useInvoice } from '@/features/billing/hooks/use-billing';
+import { useTenantInvoice } from '@/features/tenant-dashboard/hooks/use-tenant-dashboard';
 import { MpesaPaymentButton } from '@/features/payments/components/mpesa-payment-button';
 import { PageLoader } from '@/components/shared/page-loader';
 import { formatCurrency, formatDate } from '@/lib/formatters';
@@ -14,7 +14,7 @@ export default function PayRentPage() {
   const invoiceId = searchParams.get('invoiceId');
   const [selectedInvoiceId] = useState(invoiceId || '');
 
-  const { data: invoice, isLoading } = useInvoice(selectedInvoiceId || '');
+  const { data: invoice, isLoading } = useTenantInvoice(selectedInvoiceId || '');
 
   if (isLoading) {
     return <PageLoader />;

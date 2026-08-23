@@ -24,7 +24,7 @@ export class TenantPortalService {
           },
         },
         leases: {
-          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
           include: {
             unit: {
               include: {
@@ -326,7 +326,9 @@ export class TenantPortalService {
     const lease = await this.prisma.lease.findFirst({
       where: {
         tenantId,
-        isActive: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
       include: {
         unit: {

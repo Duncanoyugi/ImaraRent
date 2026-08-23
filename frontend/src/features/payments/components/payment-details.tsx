@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils';
 
 interface PaymentDetailsProps {
   payment: Payment;
+  backPath?: string;
+  showTenantLink?: boolean;
 }
 
 const methodLabels = {
@@ -37,7 +39,11 @@ const methodIcons = {
   CARD: CreditCard,
 };
 
-export const PaymentDetails = ({ payment }: PaymentDetailsProps) => {
+export const PaymentDetails = ({
+  payment,
+  backPath = '/payments',
+  showTenantLink = true,
+}: PaymentDetailsProps) => {
   const navigate = useNavigate();
   const MethodIcon = methodIcons[payment.method];
 
@@ -46,12 +52,12 @@ export const PaymentDetails = ({ payment }: PaymentDetailsProps) => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/payments')}
-            className="h-9 w-9 shrink-0"
-          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(backPath)}
+              className="h-9 w-9 shrink-0"
+            >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -179,11 +185,13 @@ export const PaymentDetails = ({ payment }: PaymentDetailsProps) => {
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 {payment.tenant.phone}
               </p>
-              <Button asChild variant="link" className="px-0">
-                <Link to={`/tenants/${payment.tenantId}`}>
-                  View Tenant Profile
-                </Link>
-              </Button>
+              {showTenantLink && (
+                <Button asChild variant="link" className="px-0">
+                  <Link to={`/tenants/${payment.tenantId}`}>
+                    View Tenant Profile
+                  </Link>
+                </Button>
+              )}
             </div>
           ) : (
             <p className="text-sm text-neutral-500">Tenant information not available</p>

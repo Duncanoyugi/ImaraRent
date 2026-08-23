@@ -122,7 +122,7 @@ export const UnitList = ({
           </p>
           {!searchTerm && statusFilter === 'ALL' && (
             <Button asChild className="mt-4">
-              <Link to={propertyId ? `/properties/${propertyId}/units/new` : '/units/new'}>
+          <Link to={propertyId ? `/units/new?propertyId=${propertyId}` : '/units/new'}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Unit
               </Link>
