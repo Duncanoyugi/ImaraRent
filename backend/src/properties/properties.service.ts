@@ -30,8 +30,9 @@ export class PropertiesService {
     // Verify user belongs to this organization
     await this.verifyUserOrganization(userId, organizationId);
 
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
     const properties = await this.prisma.property.findMany({
-      where: { organizationId },
+      where: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) },
       include: {
         units: {
           select: {
@@ -87,10 +88,7 @@ export class PropertiesService {
     await this.verifyUserOrganization(userId, organizationId);
 
     const property = await this.prisma.property.findFirst({
-      where: {
-        id,
-        organizationId,
-      },
+      where: { id, organizationId, ...(await this.propertyScope(userId, organizationId)) },
       include: {
         units: {
           include: {
@@ -145,7 +143,7 @@ export class PropertiesService {
     await this.verifyUserOrganization(userId, organizationId);
 
     const property = await this.prisma.property.findFirst({
-      where: { id, organizationId },
+      where: { id, organizationId, ...(await this.propertyScope(userId, organizationId)) },
     });
 
     if (!property) {
@@ -206,14 +204,19 @@ export class PropertiesService {
     // Verify user belongs to this organization
     await this.verifyUserOrganization(userId, organizationId);
 
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyWhere = { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) };
+    const unitPropertyWhere = propertyIds
+      ? { propertyId: { in: propertyIds } }
+      : { property: { organizationId } };
     const [properties, units, unitsByStatus] = await Promise.all([
-      this.prisma.property.count({ where: { organizationId } }),
+      this.prisma.property.count({ where: propertyWhere }),
       this.prisma.unit.count({
-        where: { property: { organizationId } },
+        where: { property: propertyWhere },
       }),
       this.prisma.unit.groupBy({
         by: ['status'],
-        where: { property: { organizationId } },
+        where: unitPropertyWhere,
         _count: true,
       }),
     ]);
@@ -241,6 +244,11 @@ export class PropertiesService {
       reservedUnits: statusCounts.RESERVED,
       occupancyRate,
     };
+  }
+
+  private async propertyScope(userId: string, organizationId: string) {
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    return propertyIds ? { id: { in: propertyIds } } : {};
   }
 
   private async verifyUserOrganization(userId: string, organizationId: string) {

@@ -18,6 +18,7 @@ export class LeasesService {
     await this.verifyUserOrganization(userId, organizationId);
 
     // Verify tenant exists and belongs to this organization
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
     const tenant = await this.prisma.tenant.findFirst({
       where: {
         id: dto.tenantId,
@@ -35,6 +36,7 @@ export class LeasesService {
         id: dto.unitId,
         property: {
           organizationId,
+          ...(propertyIds ? { id: { in: propertyIds } } : {}),
         },
       },
       include: {
@@ -104,6 +106,7 @@ export class LeasesService {
 
   async activateLease(id: string, organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const lease = await this.prisma.lease.findFirst({
       where: {
@@ -111,6 +114,7 @@ export class LeasesService {
         unit: {
           property: {
             organizationId,
+            ...(propertyIds ? { id: { in: propertyIds } } : {}),
           },
         },
       },
@@ -180,11 +184,13 @@ export class LeasesService {
     unitId?: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const where: any = {
       unit: {
         property: {
           organizationId,
+          ...(propertyIds ? { id: { in: propertyIds } } : {}),
         },
       },
     };
@@ -247,6 +253,7 @@ export class LeasesService {
 
   async findOne(id: string, organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const lease = await this.prisma.lease.findFirst({
       where: {
@@ -254,6 +261,7 @@ export class LeasesService {
         unit: {
           property: {
             organizationId,
+            ...(propertyIds ? { id: { in: propertyIds } } : {}),
           },
         },
       },
@@ -308,6 +316,7 @@ export class LeasesService {
     dto: UpdateLeaseDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const lease = await this.prisma.lease.findFirst({
       where: {
@@ -315,6 +324,7 @@ export class LeasesService {
         unit: {
           property: {
             organizationId,
+            ...(propertyIds ? { id: { in: propertyIds } } : {}),
           },
         },
       },
@@ -379,6 +389,7 @@ export class LeasesService {
     reason?: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const lease = await this.prisma.lease.findFirst({
       where: {
@@ -386,6 +397,7 @@ export class LeasesService {
         unit: {
           property: {
             organizationId,
+            ...(propertyIds ? { id: { in: propertyIds } } : {}),
           },
         },
         isActive: true,

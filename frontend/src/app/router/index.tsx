@@ -53,6 +53,7 @@ const MaintenanceReportPage = lazy(() => import('@/pages/owner/reports/maintenan
 
 // Owner Settings pages
 const OwnerSettingsPage = lazy(() => import('@/pages/owner/settings'));
+const OwnerManagersPage = lazy(() => import('@/pages/owner/settings/managers'));
 const OwnerProfilePage = lazy(() => import('@/pages/owner/profile'));
 
 // Manager pages
@@ -155,6 +156,15 @@ export const AppRoutes = () => {
                     TENANT: <TenantDashboardPage />,
                   }}
                 />
+              }
+            />
+
+            <Route
+              path="/settings/managers"
+              element={
+                <RoleBasedRoute allowedRoles={['OWNER']}>
+                  <OwnerManagersPage />
+                </RoleBasedRoute>
               }
             />
 

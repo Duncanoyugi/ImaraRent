@@ -8,11 +8,15 @@ import {
 import { PrismaService } from '../common/prisma/prisma.service';
 import { UserRole } from '@prisma/client';
 import { hash } from 'argon2';
-import { InviteManagerDto, UpdateUserDto } from './dto';
+import { AssignManagerPropertiesDto, InviteManagerDto, UpdateUserDto } from './dto';
+import { EmailService } from '../notifications/channels/email.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   async findById(id: string, requestingUserId: string) {
     const user = await this.prisma.user.findUnique({
@@ -76,30 +80,119 @@ export class UsersService {
     const tempPassword = this.generateTempPassword();
     const passwordHash = await hash(tempPassword);
 
-    // Create user with MANAGER role
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        passwordHash,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        phone: dto.phone,
-        role: UserRole.MANAGER,
-        organizationId: organizationId,
-        isActive: true,
-      },
+    const propertyIds = [...new Set(dto.propertyIds ?? [])];
+    const properties = await this.prisma.property.findMany({
+      where: { id: { in: propertyIds }, organizationId },
+      select: { id: true },
+    });
+
+    if (properties.length !== propertyIds.length) {
+      throw new ForbiddenException('All assigned properties must belong to your organization');
+    }
+
+    const user = await this.prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          email: dto.email,
+          passwordHash,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          phone: dto.phone,
+          role: UserRole.MANAGER,
+          organizationId,
+          isActive: true,
+        },
+      });
+
+      if (propertyIds.length > 0) {
+        await tx.propertyManager.createMany({
+          data: propertyIds.map((propertyId) => ({
+            propertyId,
+            managerId: createdUser.id,
+            assignedBy: requestingUserId,
+          })),
+        });
+      }
+
+      return createdUser;
     });
 
     // Remove password hash from response
     const { passwordHash: _, ...safeUser } = user;
 
-    // TODO: Send welcome email with temporary password
-    // We'll implement this in the notifications module later
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+    const emailSent = await this.emailService.send({
+      to: user.email,
+      subject: 'You have been invited to manage properties on ImaraRent',
+      text: [
+        `Hello ${user.firstName},`,
+        '',
+        'You have been invited to ImaraRent as a property manager.',
+        `Sign in: ${loginUrl}`,
+        `Email: ${user.email}`,
+        `Temporary password: ${tempPassword}`,
+        '',
+        'Please change this password after signing in.',
+      ].join('\n'),
+      html: `<p>Hello ${user.firstName},</p><p>You have been invited to ImaraRent as a property manager.</p><p><a href="${loginUrl}">Sign in to ImaraRent</a></p><p><strong>Email:</strong> ${user.email}<br /><strong>Temporary password:</strong> ${tempPassword}</p><p>Please change this password after signing in.</p>`,
+    });
 
     return {
       ...safeUser,
-      tempPassword, // Include temporary password in response (in production, send via email)
+      emailSent,
     };
+  }
+
+  async getManagerProperties(managerId: string, requestingUserId: string) {
+    const requester = await this.requireOwner(requestingUserId);
+    const manager = await this.prisma.user.findFirst({
+      where: { id: managerId, organizationId: requester.organizationId, role: UserRole.MANAGER },
+      select: { id: true },
+    });
+    if (!manager) throw new NotFoundException('Manager not found');
+
+    return this.prisma.propertyManager.findMany({
+      where: { managerId, property: { organizationId: requester.organizationId } },
+      include: { property: { select: { id: true, name: true, address: true } } },
+      orderBy: { assignedAt: 'desc' },
+    });
+  }
+
+  async assignManagerProperties(managerId: string, requestingUserId: string, dto: AssignManagerPropertiesDto) {
+    const requester = await this.requireOwner(requestingUserId);
+    const propertyIds = [...new Set(dto.propertyIds)];
+    const [manager, properties] = await Promise.all([
+      this.prisma.user.findFirst({
+        where: { id: managerId, organizationId: requester.organizationId, role: UserRole.MANAGER },
+        select: { id: true },
+      }),
+      this.prisma.property.findMany({
+        where: { id: { in: propertyIds }, organizationId: requester.organizationId },
+        select: { id: true },
+      }),
+    ]);
+    if (!manager) throw new NotFoundException('Manager not found');
+    if (properties.length !== propertyIds.length) {
+      throw new ForbiddenException('All properties must belong to your organization');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.propertyManager.updateMany({ where: { managerId }, data: { isActive: false } }),
+      ...propertyIds.map((propertyId) => this.prisma.propertyManager.upsert({
+        where: { propertyId_managerId: { propertyId, managerId } },
+        create: { propertyId, managerId, assignedBy: requestingUserId },
+        update: { isActive: true, assignedBy: requestingUserId },
+      })),
+    ]);
+    return this.getManagerProperties(managerId, requestingUserId);
+  }
+
+  private async requireOwner(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.role !== UserRole.OWNER) {
+      throw new ForbiddenException('Only owners can manage manager assignments');
+    }
+    return user;
   }
 
   async updateUser(id: string, requestingUserId: string, dto: UpdateUserDto) {

@@ -34,6 +34,6 @@ import { TemplateService } from './channels/template.service';
     InAppService,
     TemplateService,
   ],
-  exports: [NotificationsService],
+  exports: [NotificationsService, EmailService],
 })
 export class NotificationsModule {}

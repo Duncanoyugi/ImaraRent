@@ -19,7 +19,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { InviteManagerDto, UpdateUserDto } from './dto';
+import { AssignManagerPropertiesDto, InviteManagerDto, UpdateUserDto } from './dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -56,6 +56,18 @@ export class UsersController {
       req.user.id,
       dto,
     );
+  }
+
+  @Get(':id/properties')
+  @Roles(UserRole.OWNER)
+  async getManagerProperties(@Param('id') id: string, @Request() req) {
+    return this.usersService.getManagerProperties(id, req.user.id);
+  }
+
+  @Post(':id/assign-properties')
+  @Roles(UserRole.OWNER)
+  async assignManagerProperties(@Param('id') id: string, @Body() dto: AssignManagerPropertiesDto, @Request() req) {
+    return this.usersService.assignManagerProperties(id, req.user.id, dto);
   }
 
   @Patch(':id')

@@ -117,6 +117,7 @@ export class BillingService {
   ) {
     // Verify user belongs to organization
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     // Verify lease exists and belongs to organization
     const lease = await this.prisma.lease.findFirst({
@@ -125,6 +126,7 @@ export class BillingService {
         unit: {
           property: {
             organizationId,
+            ...(propertyIds ? { id: { in: propertyIds } } : {}),
           },
         },
         isActive: true,
@@ -181,13 +183,12 @@ export class BillingService {
     dto: AddInvoiceLineDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const invoice = await this.prisma.invoice.findFirst({
       where: {
         id: invoiceId,
-        tenant: {
-          organizationId,
-        },
+        lease: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
       },
     });
 
@@ -241,11 +242,10 @@ export class BillingService {
     tenantId?: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const where: any = {
-      tenant: {
-        organizationId,
-      },
+      lease: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
     };
 
     if (status) {
@@ -305,13 +305,12 @@ export class BillingService {
 
   async findOne(id: string, organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const invoice = await this.prisma.invoice.findFirst({
       where: {
         id,
-        tenant: {
-          organizationId,
-        },
+        lease: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
       },
       include: {
         tenant: {
@@ -376,13 +375,12 @@ export class BillingService {
     dto: UpdateInvoiceDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const invoice = await this.prisma.invoice.findFirst({
       where: {
         id,
-        tenant: {
-          organizationId,
-        },
+        lease: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
       },
     });
 
@@ -431,13 +429,12 @@ export class BillingService {
     reason?: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const invoice = await this.prisma.invoice.findFirst({
       where: {
         id,
-        tenant: {
-          organizationId,
-        },
+        lease: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
       },
     });
 
@@ -472,12 +469,10 @@ export class BillingService {
     userId: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const tenant = await this.prisma.tenant.findFirst({
-      where: {
-        id: tenantId,
-        organizationId,
-      },
+      where: { id: tenantId, organizationId, ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}) },
     });
 
     if (!tenant) {
@@ -513,12 +508,10 @@ export class BillingService {
     userId: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const tenant = await this.prisma.tenant.findFirst({
-      where: {
-        id: tenantId,
-        organizationId,
-      },
+      where: { id: tenantId, organizationId, ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}) },
     });
 
     if (!tenant) {

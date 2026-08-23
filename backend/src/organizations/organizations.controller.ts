@@ -62,6 +62,16 @@ export class OrganizationsController {
     return this.organizationsService.update(id, req.user.id, dto);
   }
 
+  @Get('me/users')
+  @ApiOperation({ summary: "Get all users in the current user's organization" })
+  @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
+  async getMyOrganizationUsers(@Request() req) {
+    return this.organizationsService.getUsers(
+      req.user.organizationId,
+      req.user.id,
+    );
+  }
+
   @Get(':id/users')
   @ApiOperation({ summary: 'Get all users in organization' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })

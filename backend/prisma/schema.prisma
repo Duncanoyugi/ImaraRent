@@ -41,6 +41,7 @@ model User {
   createdMaintenanceTickets  MaintenanceTicket[]
   notifications              Notification[]
   createdProperties          Property[]          @relation("PropertyCreator")
+  managedProperties          PropertyManager[]
   tenantProfile              Tenant?
   organization               Organization        @relation(fields: [organizationId], references: [id])
 
@@ -65,6 +66,7 @@ model Property {
   createdBy      User         @relation("PropertyCreator", fields: [createdById], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id])
   units          Unit[]
+  managers       PropertyManager[]
 
   @@index([organizationId])
   @@index([city])
@@ -321,6 +323,21 @@ model InAppNotification {
 
   @@index([userId])
   @@index([read])
+}
+
+model PropertyManager {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  managerId  String
+  manager    User     @relation(fields: [managerId], references: [id])
+  assignedAt DateTime @default(now())
+  assignedBy String
+  isActive   Boolean  @default(true)
+
+  @@unique([propertyId, managerId])
+  @@index([managerId])
+  @@index([propertyId])
 }
 
 enum UserRole {

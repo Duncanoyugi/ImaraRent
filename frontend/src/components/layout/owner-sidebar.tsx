@@ -8,8 +8,8 @@ import {
   CreditCard,
   Wrench,
   BarChart3,
-  Settings,
   Bell,
+  UserPlus,
 } from 'lucide-react';
 import { Sidebar } from './sidebar';
 
@@ -87,9 +87,9 @@ const sections = [
         href: '/notifications',
       },
       {
-        icon: <Settings className="h-5 w-5" />,
-        label: 'Settings',
-        href: '/settings',
+        icon: <UserPlus className="h-5 w-5" />,
+        label: 'Manager Access',
+        href: '/settings/managers',
       },
     ],
   },

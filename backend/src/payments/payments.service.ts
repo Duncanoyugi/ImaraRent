@@ -27,14 +27,13 @@ export class PaymentsService {
   ) {
     // Verify user belongs to organization
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     // Find invoice
     const invoice = await this.prisma.invoice.findFirst({
       where: {
         id: dto.invoiceId,
-        tenant: {
-          organizationId,
-        },
+        lease: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
       },
       include: {
         tenant: true,
@@ -327,12 +326,14 @@ export class PaymentsService {
   ) {
     // Verify user belongs to organization
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     // Verify tenant belongs to organization
     const tenant = await this.prisma.tenant.findFirst({
       where: {
         id: dto.tenantId,
         organizationId,
+        ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}),
       },
     });
 
@@ -415,11 +416,10 @@ export class PaymentsService {
 
   async findAll(organizationId: string, userId: string, tenantId?: string) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const where: any = {
-      tenant: {
-        organizationId,
-      },
+      tenant: { organizationId, ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}) },
     };
 
     if (tenantId) {
@@ -455,13 +455,12 @@ export class PaymentsService {
 
   async findOne(id: string, organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const payment = await this.prisma.payment.findFirst({
       where: {
         id,
-        tenant: {
-          organizationId,
-        },
+        tenant: { organizationId, ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}) },
       },
       include: {
         tenant: {
@@ -504,11 +503,13 @@ export class PaymentsService {
     userId: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const tenant = await this.prisma.tenant.findFirst({
       where: {
         id: tenantId,
         organizationId,
+        ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}),
       },
     });
 

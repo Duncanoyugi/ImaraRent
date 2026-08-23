@@ -24,7 +24,7 @@ export class TenantsService {
       where: {
         id: dto.unitId,
         property: {
-          organizationId,
+          ...(await this.propertyScope(userId, organizationId)),
         },
       },
       include: {
@@ -94,8 +94,10 @@ export class TenantsService {
   async findAll(organizationId: string, userId: string, status?: TenantStatus) {
     await this.verifyUserOrganization(userId, organizationId);
 
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
     const where: any = {
       organizationId,
+      ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}),
     };
 
     if (status) {
@@ -144,6 +146,7 @@ export class TenantsService {
       where: {
         id,
         organizationId,
+        ...(await this.tenantScope(userId, organizationId)),
       },
       include: {
         user: {
@@ -227,6 +230,7 @@ export class TenantsService {
       where: {
         id,
         organizationId,
+        ...(await this.tenantScope(userId, organizationId)),
       },
     });
 
@@ -356,6 +360,7 @@ export class TenantsService {
       where: {
         id,
         organizationId,
+        ...(await this.tenantScope(userId, organizationId)),
       },
     });
 
@@ -419,6 +424,7 @@ export class TenantsService {
       where: {
         id,
         organizationId,
+        ...(await this.tenantScope(userId, organizationId)),
       },
     });
 
@@ -454,6 +460,7 @@ export class TenantsService {
       where: {
         id,
         organizationId,
+        ...(await this.tenantScope(userId, organizationId)),
       },
       include: {
         leases: {
@@ -509,6 +516,7 @@ export class TenantsService {
       where: {
         unitId,
         isActive: true,
+        unit: { property: await this.propertyScope(userId, organizationId) },
         tenant: {
           organizationId,
           status: TenantStatus.ACTIVE,
@@ -561,5 +569,15 @@ export class TenantsService {
         'You do not have access to this organization',
       );
     }
+  }
+
+  private async propertyScope(userId: string, organizationId: string) {
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    return { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) };
+  }
+
+  private async tenantScope(userId: string, organizationId: string) {
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    return propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {};
   }
 }

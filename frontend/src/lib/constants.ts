@@ -23,6 +23,8 @@ export const API_ROUTES = {
     INVITE_MANAGER: '/users/invite-manager',
     DEACTIVATE: '/users/:id/deactivate',
     REACTIVATE: '/users/:id/reactivate',
+    MANAGER_PROPERTIES: '/users/:id/properties',
+    ASSIGN_PROPERTIES: '/users/:id/assign-properties',
   },
   PROPERTIES: {
     BASE: '/properties',

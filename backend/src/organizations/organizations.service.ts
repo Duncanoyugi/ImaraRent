@@ -94,6 +94,12 @@ export class OrganizationsService {
         isActive: true,
         lastLoginAt: true,
         createdAt: true,
+        managedProperties: {
+          where: { isActive: true },
+          select: {
+            property: { select: { id: true, name: true } },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

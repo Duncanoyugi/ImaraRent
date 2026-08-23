@@ -5,6 +5,7 @@ import {
   MaxLength,
   IsOptional,
   IsPhoneNumber,
+  IsArray,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -29,4 +30,14 @@ export class InviteManagerDto {
   @IsOptional()
   @IsPhoneNumber('KE')
   phone?: string;
+
+  @ApiProperty({
+    example: ['prop_123', 'prop_456'],
+    required: false,
+    description: 'Property IDs to assign to the manager',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  propertyIds?: string[];
 }

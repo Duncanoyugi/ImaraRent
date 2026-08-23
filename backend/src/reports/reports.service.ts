@@ -67,6 +67,7 @@ export class ReportsService {
     dto: ReportRequestDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const { startDate, endDate } = this.calculateDateRange(
       dto.period || ReportPeriod.MONTH,
@@ -77,7 +78,7 @@ export class ReportsService {
     // Get all payments in date range
     const payments = await this.prisma.payment.findMany({
       where: {
-        tenant: { organizationId },
+        tenant: { organizationId, ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}) },
         paymentDate: {
           gte: startDate,
           lte: endDate,
@@ -117,7 +118,7 @@ export class ReportsService {
     // Get all invoices in date range
     const invoices = await this.prisma.invoice.findMany({
       where: {
-        tenant: { organizationId },
+        lease: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
         createdAt: {
           gte: startDate,
           lte: endDate,
@@ -256,7 +257,7 @@ export class ReportsService {
 
     // Property breakdown
     const properties = await this.prisma.property.findMany({
-      where: { organizationId },
+      where: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) },
       include: {
         units: {
           include: {
@@ -339,9 +340,10 @@ export class ReportsService {
     _dto: ReportRequestDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const properties = await this.prisma.property.findMany({
-      where: { organizationId },
+      where: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) },
       include: {
         units: {
           include: {
@@ -419,10 +421,11 @@ export class ReportsService {
     _dto: ReportRequestDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     // Get all tenants with outstanding balance
     const tenants = await this.prisma.tenant.findMany({
-      where: { organizationId },
+      where: { organizationId, ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}) },
       include: {
         leases: {
           include: {
@@ -559,9 +562,10 @@ export class ReportsService {
     _dto: ReportRequestDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const properties = await this.prisma.property.findMany({
-      where: { organizationId },
+      where: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) },
       include: {
         units: true,
       },
@@ -626,6 +630,7 @@ export class ReportsService {
     dto: ReportRequestDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const { startDate, endDate } = this.calculateDateRange(
       dto.period || ReportPeriod.MONTH,
@@ -636,7 +641,7 @@ export class ReportsService {
     const tickets = await this.prisma.maintenanceTicket.findMany({
       where: {
         unit: {
-          property: { organizationId },
+          property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) },
         },
         createdAt: {
           gte: startDate,
@@ -700,7 +705,7 @@ export class ReportsService {
 
     // Property breakdown
     const properties = await this.prisma.property.findMany({
-      where: { organizationId },
+      where: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) },
     });
 
     const propertyBreakdown = properties.map((property) => {
@@ -749,11 +754,13 @@ export class ReportsService {
     tenantId: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
 
     const tenant = await this.prisma.tenant.findFirst({
       where: {
         id: tenantId,
         organizationId,
+        ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}),
       },
       include: {
         leases: {
