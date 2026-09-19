@@ -1,75 +1,95 @@
+import { RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PageHeader } from '@/components/shared/page-header';
 import { OwnerStatCards } from './owner-stat-cards';
-import { RevenueChart } from '@/features/dashboard/components/revenue-chart';
-import { OccupancyChart } from '@/features/dashboard/components/occupancy-chart';
+import { OwnerQuickActions } from './owner-quick-actions';
+import { OwnerRevenueChart } from './owner-revenue-chart';
+import { OwnerOccupancyGrid } from './owner-occupancy-grid';
+import { OwnerArrearsSummary } from './owner-arrears-summary';
+import { OwnerPropertyList } from './owner-property-list';
 import { RecentActivity } from '@/features/dashboard/components/recent-activity';
 import { UpcomingPayments } from '@/features/dashboard/components/upcoming-payments';
 import { MaintenanceAlerts } from '@/features/dashboard/components/maintenance-alerts';
 import { useOwnerDashboard } from '../hooks/use-owner-dashboard';
-import { PageLoader } from '@/components/shared/page-loader';
+import { useAuth } from '@/features/auth/hooks/use-auth';
+import { errorMessage } from '@/utils/error-handlers';
+
+const greeting = (): string => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+};
 
 export const OwnerDashboard = () => {
-  const { data, isLoading, error } = useOwnerDashboard();
+  const { user } = useAuth();
+  const { data, isLoading, error, refetch, isFetching } = useOwnerDashboard();
 
-  if (isLoading) {
-    return <PageLoader />;
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-[400px] items-center justify-center">
-        <div className="text-center">
-          <p className="text-error-500">Failed to load dashboard data</p>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            {(error as Error)?.message || 'Please try again later'}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="flex h-[400px] items-center justify-center">
-        <p className="text-neutral-500 dark:text-neutral-400">No dashboard data available</p>
-      </div>
-    );
-  }
+  const stats = data?.stats;
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-neutral-500 dark:text-neutral-400">
-          Welcome back! Here's an overview of your property portfolio.
-        </p>
-      </div>
+    <div className="page-stack">
+      <PageHeader
+        title={`${greeting()}, ${user?.firstName ?? 'there'}`}
+        description="How your portfolio is performing right now."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            loading={isFetching && !isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        }
+      />
 
-      {/* Stats Cards */}
-      <OwnerStatCards stats={data.stats} />
+      {error && (
+        <Alert variant="error">
+          <AlertTitle>Could not load your dashboard</AlertTitle>
+          <AlertDescription>
+            {errorMessage(error)}
+            <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+              Try again
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
-      {/* Charts Row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RevenueChart data={data.revenueData} />
-        <OccupancyChart
-          occupied={data.stats.occupiedUnits}
-          vacant={data.stats.vacantUnits}
-          maintenance={data.stats.maintenanceUnits}
+      <OwnerStatCards stats={stats} />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <OwnerRevenueChart data={data?.revenueData} isLoading={isLoading} />
+        </div>
+        <OwnerOccupancyGrid
+          occupied={stats?.occupiedUnits ?? 0}
+          vacant={stats?.vacantUnits ?? 0}
+          maintenance={stats?.maintenanceUnits ?? 0}
+          isLoading={isLoading}
         />
       </div>
 
-      {/* Bottom Row */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <OwnerArrearsSummary />
+        <OwnerPropertyList />
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <RecentActivity activities={data.recentActivity} />
+          <RecentActivity activities={data?.recentActivity ?? []} />
         </div>
         <div className="space-y-6">
-          <UpcomingPayments payments={data.upcomingPayments} />
-          <MaintenanceAlerts alerts={data.maintenanceAlerts} />
+          <OwnerQuickActions />
+          <UpcomingPayments payments={data?.upcomingPayments ?? []} />
+          <MaintenanceAlerts alerts={data?.maintenanceAlerts ?? []} />
         </div>
       </div>
     </div>
   );
 };
+
+OwnerDashboard.displayName = 'OwnerDashboard';

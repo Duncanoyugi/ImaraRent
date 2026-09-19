@@ -50,7 +50,7 @@ model User {
 }
 
 model Property {
-  id             String       @id @default(cuid())
+  id             String            @id @default(cuid())
   name           String
   description    String?
   address        String
@@ -59,14 +59,14 @@ model Property {
   postalCode     String?
   latitude       Float?
   longitude      Float?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
   organizationId String
   createdById    String
-  createdBy      User         @relation("PropertyCreator", fields: [createdById], references: [id])
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  units          Unit[]
+  createdBy      User              @relation("PropertyCreator", fields: [createdById], references: [id])
+  organization   Organization      @relation(fields: [organizationId], references: [id])
   managers       PropertyManager[]
+  units          Unit[]
 
   @@index([organizationId])
   @@index([city])
@@ -328,12 +328,12 @@ model InAppNotification {
 model PropertyManager {
   id         String   @id @default(cuid())
   propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   managerId  String
-  manager    User     @relation(fields: [managerId], references: [id])
   assignedAt DateTime @default(now())
   assignedBy String
   isActive   Boolean  @default(true)
+  manager    User     @relation(fields: [managerId], references: [id], onDelete: NoAction)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@unique([propertyId, managerId])
   @@index([managerId])

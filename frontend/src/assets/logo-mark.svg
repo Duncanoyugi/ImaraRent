@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="ImaraRent">
+  <title>ImaraRent</title>
+  <!-- Rooflines stepping upward: "imara" is Swahili for strong/solid. -->
+  <rect width="48" height="48" rx="12" fill="#059669"/>
+  <path d="M12 30v-7.2l6-4.8 6 4.8V30z" fill="#fff" opacity=".55"/>
+  <path d="M22 32V21.5l7-5.5 7 5.5V32z" fill="#fff"/>
+  <rect x="26.5" y="24" width="3" height="3" rx=".5" fill="#059669"/>
+  <rect x="28" y="28" width="2" height="4" rx=".5" fill="#059669"/>
+</svg>

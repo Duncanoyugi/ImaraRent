@@ -4,11 +4,18 @@ import {
   NotFoundException,
   ForbiddenException,
   ConflictException,
+  BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { UserRole } from '@prisma/client';
-import { hash } from 'argon2';
-import { AssignManagerPropertiesDto, InviteManagerDto, UpdateUserDto } from './dto';
+import { hash, verify } from 'argon2';
+import {
+  AssignManagerPropertiesDto,
+  ChangePasswordDto,
+  InviteManagerDto,
+  UpdateUserDto,
+} from './dto';
 import { EmailService } from '../notifications/channels/email.service';
 
 @Injectable()
@@ -294,4 +301,46 @@ export class UsersService {
     }
     return password;
   }
+
+  /**
+   * Changes a user's own password.
+   *
+   * Only the account holder may do this — an owner resetting someone else's
+   * password would bypass the invitation flow, so it is refused outright.
+   */
+  async changePassword(
+    id: string,
+    requestingUserId: string,
+    dto: ChangePasswordDto,
+  ) {
+    if (id !== requestingUserId) {
+      throw new ForbiddenException('You can only change your own password');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isValid = await verify(user.passwordHash, dto.currentPassword);
+
+    if (!isValid) {
+      throw new UnauthorizedException('Your current password is incorrect');
+    }
+
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException(
+        'Choose a password different from your current one',
+      );
+    }
+
+    await this.prisma.user.update({
+      where: { id },
+      data: { passwordHash: await hash(dto.newPassword) },
+    });
+
+    return { success: true, message: 'Password changed successfully' };
+  }
+
 }

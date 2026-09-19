@@ -19,7 +19,9 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { AssignManagerPropertiesDto, InviteManagerDto, UpdateUserDto } from './dto';
+import { AssignManagerPropertiesDto, InviteManagerDto, UpdateUserDto,
+  ChangePasswordDto,
+} from './dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -97,4 +99,18 @@ export class UsersController {
   async reactivateUser(@Param('id') id: string, @Request() req) {
     return this.usersService.reactivateUser(id, req.user.id);
   }
+
+  @Patch(':id/change-password')
+  @ApiOperation({ summary: 'Change your own password' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({ status: 401, description: 'Current password is incorrect' })
+  @ApiResponse({ status: 403, description: 'Cannot change another user password' })
+  async changePassword(
+    @Param('id') id: string,
+    @Body() dto: ChangePasswordDto,
+    @Request() req,
+  ) {
+    return this.usersService.changePassword(id, req.user.id, dto);
+  }
+
 }

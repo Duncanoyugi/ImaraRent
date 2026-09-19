@@ -16,12 +16,13 @@ interface Stats {
 }
 
 interface OwnerStatCardsProps {
-  stats: Stats;
+  /** Undefined while the dashboard query is still in flight. */
+  stats: Stats | undefined;
   isLoading?: boolean;
 }
 
 export const OwnerStatCards = ({ stats, isLoading = false }: OwnerStatCardsProps) => {
-  if (isLoading) {
+  if (isLoading || !stats) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (

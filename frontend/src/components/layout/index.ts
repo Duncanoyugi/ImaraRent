@@ -7,3 +7,4 @@ export * from './manager-sidebar';
 export * from './tenant-sidebar';
 export * from './mobile-nav';
 export * from './breadcrumb';
+export * from './app-command-palette';

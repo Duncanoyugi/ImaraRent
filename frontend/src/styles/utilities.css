@@ -1,0 +1,70 @@
+/* ImaraRent shared utility classes.
+   Kept deliberately small — Tailwind covers most cases; these encode
+   repeated app-level patterns (page rhythm, table chrome, focus rings). */
+
+@layer utilities {
+  /* Consistent focus ring for every interactive element */
+  .focus-ring {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
+
+  /* Vertical rhythm for page content */
+  .page-stack > * + * {
+    margin-top: 1.5rem;
+  }
+
+  /* Numeric columns line up in tables */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Truncate to a fixed number of lines */
+  .line-clamp-1,
+  .line-clamp-2,
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-1 { -webkit-line-clamp: 1; }
+  .line-clamp-2 { -webkit-line-clamp: 2; }
+  .line-clamp-3 { -webkit-line-clamp: 3; }
+
+  /* Visually hidden but available to screen readers */
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Print: strip app chrome so invoices/receipts/reports print clean */
+  @media print {
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    .print-full { width: 100% !important; max-width: none !important; }
+  }
+  .print-only { display: none; }
+}
+
+/* Respect the OS "reduce motion" setting across the whole app */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

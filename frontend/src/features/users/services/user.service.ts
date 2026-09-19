@@ -19,26 +19,64 @@ export interface InviteManagerData {
   propertyIds: string[];
 }
 
+export interface UpdateUserPayload {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  isActive?: boolean;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export const userService = {
-  getAll: async (): Promise<User[]> => {
-    const response = await api.get<User[]>(API_ROUTES.ORGANIZATIONS.ME + '/users');
-    return response;
-  },
+  /**
+   * The organization roster. Listing users is an organization-scoped
+   * operation, so it goes through `/organizations/me/users` rather than
+   * `/users` — there is no "list all users" endpoint by design.
+   */
+  getAll: async (): Promise<User[]> =>
+    api.get<User[]>(`${API_ROUTES.ORGANIZATIONS.ME}/users`),
 
-  inviteManager: async (data: InviteManagerData): Promise<User & { emailSent: boolean }> => {
-    return api.post<User & { emailSent: boolean }>(API_ROUTES.USERS.INVITE_MANAGER, data);
-  },
+  getMe: async (): Promise<User> => api.get<User>(API_ROUTES.USERS.ME),
 
-  getManagerProperties: async (managerId: string): Promise<ManagerPropertyAssignment[]> => {
-    return api.get<ManagerPropertyAssignment[]>(
-      API_ROUTES.USERS.MANAGER_PROPERTIES.replace(':id', managerId),
-    );
-  },
+  getById: async (id: string): Promise<User> =>
+    api.get<User>(`${API_ROUTES.USERS.BASE}/${id}`),
 
-  assignManagerProperties: async (managerId: string, propertyIds: string[]) => {
-    return api.post<ManagerPropertyAssignment[]>(
+  update: async (id: string, data: UpdateUserPayload): Promise<User> =>
+    api.patch<User>(`${API_ROUTES.USERS.BASE}/${id}`, data),
+
+  changePassword: async (
+    id: string,
+    data: ChangePasswordPayload
+  ): Promise<{ success: boolean; message: string }> =>
+    api.patch<{ success: boolean; message: string }>(
+      `${API_ROUTES.USERS.BASE}/${id}/change-password`,
+      data
+    ),
+
+  deactivate: async (id: string): Promise<User> =>
+    api.patch<User>(API_ROUTES.USERS.DEACTIVATE.replace(':id', id)),
+
+  reactivate: async (id: string): Promise<User> =>
+    api.patch<User>(API_ROUTES.USERS.REACTIVATE.replace(':id', id)),
+
+  inviteManager: async (data: InviteManagerData): Promise<User & { emailSent: boolean }> =>
+    api.post<User & { emailSent: boolean }>(API_ROUTES.USERS.INVITE_MANAGER, data),
+
+  getManagerProperties: async (managerId: string): Promise<ManagerPropertyAssignment[]> =>
+    api.get<ManagerPropertyAssignment[]>(
+      API_ROUTES.USERS.MANAGER_PROPERTIES.replace(':id', managerId)
+    ),
+
+  assignManagerProperties: async (
+    managerId: string,
+    propertyIds: string[]
+  ): Promise<ManagerPropertyAssignment[]> =>
+    api.post<ManagerPropertyAssignment[]>(
       API_ROUTES.USERS.ASSIGN_PROPERTIES.replace(':id', managerId),
-      { propertyIds },
-    );
-  },
+      { propertyIds }
+    ),
 };

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ImaraRent">
+  <title>ImaraRent</title>
+  <!-- Monochrome glyph: inherits colour from `fill="currentColor"` context. -->
+  <path d="M6 21v-5.4l4.5-3.6 4.5 3.6V21z" fill="currentColor" opacity=".55"/>
+  <path d="M13.5 22.5v-8l5.5-4.2 5.5 4.2v8z" fill="currentColor"/>
+</svg>
