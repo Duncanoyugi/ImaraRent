@@ -75,12 +75,11 @@ services:
       NODE_ENV: production
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       
-      # Email (SMTP)
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      EMAIL_FROM: ${EMAIL_FROM:-noreply@imararent.com}
+      # Email (Brevo)
+      MAIL_ENABLED: ${MAIL_ENABLED:-true}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-ImaraRent}
       
       # SMS (Africa's Talking)
       AFRICA_TALKING_USERNAME: ${AFRICA_TALKING_USERNAME}

@@ -4,16 +4,23 @@ import {
   ForbiddenException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { TenantStatus } from '@prisma/client';
+import { NotificationChannel, NotificationType, TenantStatus } from '@prisma/client';
 import { hash } from 'argon2';
 import * as crypto from 'crypto';
 import { CreateTenantDto, UpdateTenantDto, AcceptInvitationDto } from './dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class TenantsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(TenantsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string, organizationId: string, dto: CreateTenantDto) {
     // Verify user belongs to this organization
@@ -82,12 +89,25 @@ export class TenantsService {
       },
     });
 
-    // TODO: Queue invitation email/SMS
-    // We'll implement this in the notifications module
+    const invitationLink = this.getInvitationLink(token);
+    const invitationEmailQueued = await this.queueInvitationEmail({
+      tenantId: tenant.id,
+      email: tenant.email,
+      firstName: tenant.firstName,
+      lastName: tenant.lastName,
+      organizationName: tenant.organization.name,
+      propertyName: unit.property.name,
+      propertyAddress: unit.property.address,
+      unitNumber: unit.number,
+      rentAmount: Number(unit.rentAmount),
+      invitationLink,
+      managerEmail: await this.getManagerEmail(userId),
+    });
 
     return {
       ...tenant,
-      invitationLink: `${process.env.FRONTEND_URL}/accept-invitation?token=${token}`,
+      invitationLink,
+      invitationEmailQueued,
     };
   }
 
@@ -404,11 +424,25 @@ export class TenantsService {
       },
     });
 
-    // TODO: Queue invitation email/SMS
+    const invitationLink = this.getInvitationLink(token);
+    const invitationEmailQueued = await this.queueInvitationEmail({
+      tenantId: updatedTenant.id,
+      email: updatedTenant.email,
+      firstName: updatedTenant.firstName,
+      lastName: updatedTenant.lastName,
+      organizationName: '',
+      propertyName: '',
+      propertyAddress: '',
+      unitNumber: '',
+      rentAmount: 0,
+      invitationLink,
+      managerEmail: await this.getManagerEmail(userId),
+    });
 
     return {
       ...updatedTenant,
-      invitationLink: `${process.env.FRONTEND_URL}/accept-invitation?token=${token}`,
+      invitationLink,
+      invitationEmailQueued,
     };
   }
 
@@ -579,5 +613,52 @@ export class TenantsService {
   private async tenantScope(userId: string, organizationId: string) {
     const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
     return propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {};
+  }
+
+  private getInvitationLink(token: string): string {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return `${frontendUrl}/accept-invitation?token=${token}`;
+  }
+
+  private async getManagerEmail(userId: string): Promise<string> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    return user?.email || process.env.MAIL_FROM_EMAIL || 'support@imararent.com';
+  }
+
+  private async queueInvitationEmail(data: {
+    tenantId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    organizationName: string;
+    propertyName: string;
+    propertyAddress: string;
+    unitNumber: string;
+    rentAmount: number;
+    invitationLink: string;
+    managerEmail: string;
+  }): Promise<boolean> {
+    try {
+      await this.notificationsService.send({
+        type: NotificationType.TENANT_INVITATION,
+        channel: NotificationChannel.EMAIL,
+        email: data.email,
+        tenantId: data.tenantId,
+        subject: 'Welcome to ImaraRent - Complete Your Registration',
+        content: 'email/tenant-invitation.hbs',
+        metadata: data,
+      });
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Failed to queue invitation email for tenant ${data.tenantId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return false;
+    }
   }
 }

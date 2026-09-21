@@ -36,9 +36,14 @@ export const useCreateTenant = () => {
 
   return useMutation({
     mutationFn: (data: CreateTenantData) => tenantService.create(data),
-    onSuccess: () => {
+    onSuccess: (tenant) => {
       queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
-      showToast.success('Tenant created successfully', 'Invitation email has been sent');
+      showToast.success(
+        'Tenant created successfully',
+        tenant.invitationEmailQueued
+          ? 'Invitation email has been queued for delivery.'
+          : 'Invitation email could not be queued. Please resend the invitation.',
+      );
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Failed to create tenant';
@@ -86,9 +91,13 @@ export const useResendInvitation = () => {
 
   return useMutation({
     mutationFn: (tenantId: string) => tenantService.resendInvitation(tenantId),
-    onSuccess: () => {
+    onSuccess: (tenant) => {
       queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
-      showToast.success('Invitation resent successfully');
+      showToast.success(
+        tenant.invitationEmailQueued
+          ? 'Invitation queued for delivery'
+          : 'Invitation could not be queued',
+      );
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Failed to resend invitation';

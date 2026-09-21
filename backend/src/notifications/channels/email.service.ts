@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-import { Transporter } from 'nodemailer';
+import { BrevoClient } from '@getbrevo/brevo';
 
 interface EmailOptions {
   to: string;
@@ -11,64 +10,55 @@ interface EmailOptions {
   from?: string;
 }
 
+interface Sender {
+  email: string;
+  name?: string;
+}
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: Transporter;
+  private readonly client?: BrevoClient;
 
   constructor(private readonly config: ConfigService) {
-    this.initializeTransporter();
-  }
+    const apiKey = this.config.get<string>('BREVO_API_KEY');
 
-  private initializeTransporter() {
-    const host = this.config.get('SMTP_HOST');
-    const port = this.config.get('SMTP_PORT');
-    const user = this.config.get('SMTP_USER');
-    const pass = this.config.get('SMTP_PASS');
-
-    if (!host || !port || !user || !pass) {
+    if (this.isEnabled() && apiKey) {
+      this.client = new BrevoClient({
+        apiKey,
+        timeoutInSeconds: 30,
+        maxRetries: 3,
+      });
+    } else if (this.isEnabled()) {
       this.logger.warn(
-        'SMTP configuration incomplete. Email service will be disabled.',
+        'BREVO_API_KEY is not configured. Email delivery is disabled.',
       );
-      return;
+    } else {
+      this.logger.log('Email delivery is disabled by MAIL_ENABLED.');
     }
-
-    this.transporter = nodemailer.createTransport({
-      host,
-      port: parseInt(port),
-      secure: parseInt(port) === 465,
-      auth: {
-        user,
-        pass,
-      },
-    });
   }
 
   async send(options: EmailOptions): Promise<boolean> {
-    if (!this.transporter) {
-      this.logger.error('Email transporter not initialized');
+    if (!this.client) {
+      this.logger.error('Brevo email client is not initialized');
       return false;
     }
 
     try {
-      const from =
-        options.from ||
-        this.config.get('EMAIL_FROM') ||
-        'noreply@imararent.com';
-
-      const info = await this.transporter.sendMail({
-        from,
-        to: options.to,
+      const sender = this.getSender(options.from);
+      const result = await this.client.transactionalEmails.sendTransacEmail({
+        sender,
+        to: [{ email: options.to }],
         subject: options.subject,
-        text: options.text || options.html.replace(/<[^>]*>/g, ''),
-        html: options.html,
+        htmlContent: options.html,
+        textContent: options.text || this.stripHtml(options.html),
       });
 
-      this.logger.log(`Email sent to ${options.to}: ${info.messageId}`);
+      this.logger.log(`Email sent to ${options.to}: ${result.messageId}`);
       return true;
     } catch (error) {
       this.logger.error(
-        `Failed to send email to ${options.to}: ${error.message}`,
+        `Failed to send email to ${options.to}: ${this.getErrorMessage(error)}`,
       );
       return false;
     }
@@ -84,13 +74,10 @@ export class EmailService {
     };
 
     for (const recipient of recipients) {
-      try {
-        await this.send({ ...options, to: recipient });
+      const sent = await this.send({ ...options, to: recipient });
+      if (sent) {
         results.success.push(recipient);
-      } catch (error) {
-        this.logger.error(
-          `Failed to send email to ${recipient}: ${error.message}`,
-        );
+      } else {
         results.failed.push(recipient);
       }
     }
@@ -99,16 +86,45 @@ export class EmailService {
   }
 
   async verifyConnection(): Promise<boolean> {
-    if (!this.transporter) return false;
+    if (!this.client) return false;
 
     try {
-      await this.transporter.verify();
+      await this.client.account.getAccount();
       return true;
     } catch (error) {
       this.logger.error(
-        `SMTP connection verification failed: ${error.message}`,
+        `Brevo connection verification failed: ${this.getErrorMessage(error)}`,
       );
       return false;
     }
+  }
+
+  private isEnabled(): boolean {
+    return this.config.get<string>('MAIL_ENABLED')?.toLowerCase() !== 'false';
+  }
+
+  private getSender(from?: string): Sender {
+    const configuredEmail = this.config.get<string>('MAIL_FROM_EMAIL');
+    const configuredName = this.config.get<string>('MAIL_FROM_NAME');
+    const sender = from || configuredEmail;
+
+    if (!sender) {
+      throw new Error('MAIL_FROM_EMAIL is not configured');
+    }
+
+    const match = sender.match(/^\s*(?:([^<>]+?)\s*)?<([^<>\s]+)>\s*$/);
+    if (match) {
+      return { email: match[2], name: match[1]?.trim() };
+    }
+
+    return { email: sender.trim(), name: configuredName };
+  }
+
+  private stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  private getErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
   }
 }

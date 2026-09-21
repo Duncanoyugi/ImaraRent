@@ -7,9 +7,11 @@ import axios, {
 import { type ApiError } from './api-types';
 import { storage } from '@/lib/storage/local-storage';
 
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1',
+  baseURL: apiBaseUrl,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -51,10 +53,11 @@ apiClient.interceptors.response.use(
           throw new Error('No refresh token available');
         }
 
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
-          { refreshToken }
-        );
+        // Use plain Axios to prevent a failed refresh request from recursively
+        // entering this response interceptor.
+        const response = await axios.post(`${apiBaseUrl}/auth/refresh`, {
+          refreshToken,
+        });
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 

@@ -177,7 +177,7 @@ CommandPalette.displayName = 'CommandPalette';
 export const useCommandShortcut = (onOpen: () => void) => {
   React.useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
+      if ((event.key ?? '').toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
       const target = event.target as HTMLElement | null;
       if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
       event.preventDefault();
