@@ -22,6 +22,12 @@ import { TicketPriorityBadge } from './ticket-priority-badge';
 import { formatDate } from '@/lib/formatters';
 import type { MaintenanceTicket } from '../types/maintenance.types';
 import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface TicketListProps {
   tickets: MaintenanceTicket[];
@@ -30,6 +36,9 @@ interface TicketListProps {
   onAssign?: (id: string) => void;
   onComplete?: (id: string) => void;
   onStatusChange?: (id: string, status: 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CLOSED') => void;
+  assignTicketId?: string | null;
+  onAssignConfirm?: (assignedToId: string) => void;
+  onAssignCancel?: () => void;
 }
 
 export const TicketList = ({
@@ -39,6 +48,9 @@ export const TicketList = ({
   onAssign,
   onComplete,
   onStatusChange,
+  assignTicketId,
+  onAssignConfirm,
+  onAssignCancel,
 }: TicketListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -80,9 +92,10 @@ export const TicketList = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
             Maintenance Tickets
@@ -252,5 +265,31 @@ export const TicketList = ({
         </div>
       )}
     </div>
-  );
+    <Dialog open={!!assignTicketId} onOpenChange={() => onAssignCancel?.()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Assign Ticket</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            Select a team member to assign this ticket to
+          </p>
+          <Select onValueChange={onAssignConfirm}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select assignee" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="self">Assign to me</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onAssignCancel}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
+);
 };

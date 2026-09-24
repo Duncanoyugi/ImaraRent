@@ -7,7 +7,7 @@ import {
   Receipt,
   CreditCard,
   Wrench,
-  Bell,
+  Settings,
 } from 'lucide-react';
 import { Sidebar } from './sidebar';
 
@@ -75,9 +75,9 @@ const sections = [
     title: 'Settings',
     items: [
       {
-        icon: <Bell className="h-5 w-5" />,
-        label: 'Notifications',
-        href: '/notifications',
+        icon: <Settings className="h-5 w-5" />,
+        label: 'Profile',
+        href: '/profile',
       },
     ],
   },

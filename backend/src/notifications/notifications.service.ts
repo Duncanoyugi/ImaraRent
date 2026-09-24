@@ -13,6 +13,8 @@ import {
   NotificationType,
 } from '@prisma/client';
 import { SendNotificationDto } from './dto';
+import { EmailService } from './channels/email.service';
+import { TemplateService } from './channels/template.service';
 
 @Injectable()
 export class NotificationsService {
@@ -21,6 +23,8 @@ export class NotificationsService {
   constructor(
     @InjectQueue('notifications') private notificationQueue: Queue,
     private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+    private readonly templateService: TemplateService,
   ) {}
 
   async send(dto: SendNotificationDto) {
@@ -42,28 +46,37 @@ export class NotificationsService {
       },
     });
 
-    // Queue the notification
-    await this.notificationQueue.add(
-      'send-notification',
-      {
-        notificationId: notification.id,
-        type: dto.type,
-        channel: dto.channel,
-        recipient,
-        subject: notification.subject,
-        content: dto.content,
-        metadata: dto.metadata || {},
-      },
-      {
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 5000,
+    try {
+      await this.notificationQueue.add(
+        'send-notification',
+        {
+          notificationId: notification.id,
+          type: dto.type,
+          channel: dto.channel,
+          recipient,
+          subject: notification.subject,
+          content: dto.content,
+          metadata: dto.metadata || {},
         },
-      },
-    );
-
-    this.logger.log(`Notification queued: ${notification.id} (${dto.channel})`);
+        {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 5000,
+          },
+        },
+      );
+      this.logger.log(`Notification queued: ${notification.id} (${dto.channel})`);
+    } catch (error) {
+      // Local development can run without Redis. Do not leave invitations
+      // undelivered simply because the optional background queue is offline.
+      this.logger.warn(
+        `Notification queue unavailable; sending ${notification.id} immediately: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      await this.sendImmediately(notification.id, dto, recipient);
+    }
 
     return notification;
   }
@@ -233,6 +246,54 @@ export class NotificationsService {
     }
 
     throw new BadRequestException('Invalid channel');
+  }
+
+  private async sendImmediately(
+    notificationId: string,
+    dto: SendNotificationDto,
+    recipient: string,
+  ): Promise<void> {
+    if (dto.channel !== NotificationChannel.EMAIL) {
+      await this.prisma.notification.update({
+        where: { id: notificationId },
+        data: {
+          status: NotificationStatus.FAILED,
+          error: 'Notification queue is unavailable',
+        },
+      });
+      return;
+    }
+
+    try {
+      const html = await this.templateService.render(
+        dto.content,
+        dto.metadata || {},
+        dto.type,
+      );
+      const sent = await this.emailService.send({
+        to: recipient,
+        subject: dto.subject || this.getDefaultSubject(dto.type),
+        html,
+      });
+
+      await this.prisma.notification.update({
+        where: { id: notificationId },
+        data: sent
+          ? { status: NotificationStatus.SENT, sentAt: new Date(), error: null }
+          : {
+              status: NotificationStatus.FAILED,
+              error: 'Email provider rejected or could not send the message',
+            },
+      });
+    } catch (error) {
+      await this.prisma.notification.update({
+        where: { id: notificationId },
+        data: {
+          status: NotificationStatus.FAILED,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+    }
   }
 
   private getDefaultSubject(type: NotificationType): string {

@@ -12,6 +12,11 @@ export default defineConfig({
 
   server: {
     port: 5173,
+    host: true,
+    hmr: {
+      host: 'localhost',
+      port: 5173,
+    },
     proxy: {
       // Lets the dev server talk to the NestJS backend without CORS.
       '/api': { target: 'http://localhost:3000', changeOrigin: true },

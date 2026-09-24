@@ -59,9 +59,13 @@ const OwnerProfilePage = lazy(() => import('@/pages/owner/profile'));
 // Manager pages
 const ManagerDashboardPage = lazy(() => import('@/pages/manager/dashboard'));
 const ManagerPropertiesPage = lazy(() => import('@/pages/manager/properties'));
+const ManagerPropertyDetailPage = lazy(() => import('@/pages/manager/properties/[id]'));
 const ManagerUnitsPage = lazy(() => import('@/pages/manager/units'));
+const ManagerUnitsDetailPage = lazy(() => import('@/pages/manager/units/[id]'));
 const ManagerTenantsPage = lazy(() => import('@/pages/manager/tenants'));
+const ManagerTenantDetailPage = lazy(() => import('@/pages/manager/tenants/[id]'));
 const ManagerLeasesPage = lazy(() => import('@/pages/manager/leases'));
+const ManagerLeaseDetailPage = lazy(() => import('@/pages/manager/leases/[id]'));
 
 // Manager Billing pages
 const ManagerInvoicesPage = lazy(() => import('@/pages/manager/billing/invoices'));
@@ -219,9 +223,12 @@ export const AppRoutes = () => {
             <Route
               path="/properties/:id"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <PropertyDetailPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <PropertyDetailPage />,
+                    MANAGER: <ManagerPropertyDetailPage />,
+                  }}
+                />
               }
             />
 
@@ -242,7 +249,7 @@ export const AppRoutes = () => {
             <Route
               path="/units/new"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
+                <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER']}>
                   <NewUnitPage />
                 </RoleBasedRoute>
               }
@@ -250,9 +257,12 @@ export const AppRoutes = () => {
             <Route
               path="/units/:id"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <UnitDetailPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <UnitDetailPage />,
+                    MANAGER: <ManagerUnitsDetailPage />,
+                  }}
+                />
               }
             />
 
@@ -273,7 +283,7 @@ export const AppRoutes = () => {
             <Route
               path="/tenants/new"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
+                <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER']}>
                   <NewTenantPage />
                 </RoleBasedRoute>
               }
@@ -281,9 +291,12 @@ export const AppRoutes = () => {
             <Route
               path="/tenants/:id"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <TenantDetailPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <TenantDetailPage />,
+                    MANAGER: <ManagerTenantDetailPage />,
+                  }}
+                />
               }
             />
 
@@ -304,7 +317,7 @@ export const AppRoutes = () => {
             <Route
               path="/leases/new"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
+                <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER']}>
                   <NewLeasePage />
                 </RoleBasedRoute>
               }
@@ -312,15 +325,18 @@ export const AppRoutes = () => {
             <Route
               path="/leases/:id"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
-                  <LeaseDetailPage />
-                </RoleBasedRoute>
+                <RolePage
+                  pages={{
+                    OWNER: <LeaseDetailPage />,
+                    MANAGER: <ManagerLeaseDetailPage />,
+                  }}
+                />
               }
             />
             <Route
               path="/leases/:id/edit"
               element={
-                <RoleBasedRoute allowedRoles={['OWNER']}>
+                <RoleBasedRoute allowedRoles={['OWNER', 'MANAGER']}>
                   <LeaseEditPage />
                 </RoleBasedRoute>
               }

@@ -90,19 +90,32 @@ export class TenantsService {
     });
 
     const invitationLink = this.getInvitationLink(token);
-    const invitationEmailQueued = await this.queueInvitationEmail({
-      tenantId: tenant.id,
-      email: tenant.email,
-      firstName: tenant.firstName,
-      lastName: tenant.lastName,
-      organizationName: tenant.organization.name,
-      propertyName: unit.property.name,
-      propertyAddress: unit.property.address,
-      unitNumber: unit.number,
-      rentAmount: Number(unit.rentAmount),
-      invitationLink,
-      managerEmail: await this.getManagerEmail(userId),
-    });
+    let invitationEmailQueued = false;
+
+    // The tenant is already persisted at this point. Invitation delivery is
+    // best-effort, so an email/queue failure must not turn a successful create
+    // into a 500 response that the client may retry.
+    try {
+      invitationEmailQueued = await this.queueInvitationEmail({
+        tenantId: tenant.id,
+        email: tenant.email,
+        firstName: tenant.firstName,
+        lastName: tenant.lastName,
+        organizationName: tenant.organization.name,
+        propertyName: unit.property.name,
+        propertyAddress: unit.property.address,
+        unitNumber: unit.number,
+        rentAmount: Number(unit.rentAmount),
+        invitationLink,
+        managerEmail: await this.getManagerEmail(userId),
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to prepare invitation for tenant ${tenant.id}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
 
     return {
       ...tenant,
@@ -373,7 +386,7 @@ export class TenantsService {
     return { valid: true, tenant };
   }
 
-  async resendInvitation(id: string, organizationId: string, userId: string) {
+async resendInvitation(id: string, organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
 
     const tenant = await this.prisma.tenant.findFirst({
@@ -381,6 +394,24 @@ export class TenantsService {
         id,
         organizationId,
         ...(await this.tenantScope(userId, organizationId)),
+      },
+      include: {
+        organization: {
+          select: { name: true },
+        },
+        leases: {
+          where: { isActive: true },
+          include: {
+            unit: {
+              include: {
+                property: {
+                  select: { name: true, address: true },
+                },
+              },
+            },
+          },
+          take: 1,
+        },
       },
     });
 
@@ -425,19 +456,34 @@ export class TenantsService {
     });
 
     const invitationLink = this.getInvitationLink(token);
-    const invitationEmailQueued = await this.queueInvitationEmail({
-      tenantId: updatedTenant.id,
-      email: updatedTenant.email,
-      firstName: updatedTenant.firstName,
-      lastName: updatedTenant.lastName,
-      organizationName: '',
-      propertyName: '',
-      propertyAddress: '',
-      unitNumber: '',
-      rentAmount: 0,
-      invitationLink,
-      managerEmail: await this.getManagerEmail(userId),
-    });
+    let invitationEmailQueued = false;
+
+    const activeLease = tenant.leases?.[0];
+    const unit = activeLease?.unit;
+
+    // The invitation token has already been renewed. A notification failure
+    // should still let the manager use the returned link or try again later.
+    try {
+      invitationEmailQueued = await this.queueInvitationEmail({
+        tenantId: updatedTenant.id,
+        email: updatedTenant.email,
+        firstName: updatedTenant.firstName,
+        lastName: updatedTenant.lastName,
+        organizationName: tenant.organization?.name || '',
+        propertyName: unit?.property?.name || '',
+        propertyAddress: unit?.property?.address || '',
+        unitNumber: unit?.number || '',
+        rentAmount: unit ? Number(activeLease.rentAmount) : 0,
+        invitationLink,
+        managerEmail: await this.getManagerEmail(userId),
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to prepare resent invitation for tenant ${updatedTenant.id}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
 
     return {
       ...updatedTenant,

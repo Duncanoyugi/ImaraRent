@@ -14,7 +14,9 @@ export const queryClient = new QueryClient({
       refetchOnReconnect: true,
     },
     mutations: {
-      retry: 1,
+      // Mutations change server state. Retrying a failed POST can create the
+      // record on the first attempt and then report a duplicate on the retry.
+      retry: false,
     },
   },
 });
