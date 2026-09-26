@@ -106,7 +106,10 @@ export class MaintenanceService {
     assignedToId?: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
 
     const where: any = {
       unit: {
@@ -177,7 +180,10 @@ export class MaintenanceService {
 
   async findOne(id: string, organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
 
     const ticket = await this.prisma.maintenanceTicket.findFirst({
       where: {
@@ -248,7 +254,10 @@ export class MaintenanceService {
     dto: UpdateTicketDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
 
     const ticket = await this.prisma.maintenanceTicket.findFirst({
       where: {
@@ -367,7 +376,10 @@ export class MaintenanceService {
     assignToUserId: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
 
     const ticket = await this.prisma.maintenanceTicket.findFirst({
       where: {
@@ -422,7 +434,10 @@ export class MaintenanceService {
     resolutionNotes?: string,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
 
     const ticket = await this.prisma.maintenanceTicket.findFirst({
       where: {
@@ -463,7 +478,10 @@ export class MaintenanceService {
     dto: AddPhotoDto,
   ) {
     await this.verifyUserOrganization(userId, organizationId);
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
 
     const ticket = await this.prisma.maintenanceTicket.findFirst({
       where: {
@@ -493,40 +511,77 @@ export class MaintenanceService {
 
   async getTicketStats(organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
 
     const [total, open, assigned, inProgress, completed, byPriority] =
       await Promise.all([
         this.prisma.maintenanceTicket.count({
-          where: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
+          where: {
+            unit: {
+              property: {
+                organizationId,
+                ...(propertyIds ? { id: { in: propertyIds } } : {}),
+              },
+            },
+          },
         }),
         this.prisma.maintenanceTicket.count({
           where: {
-            unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } },
+            unit: {
+              property: {
+                organizationId,
+                ...(propertyIds ? { id: { in: propertyIds } } : {}),
+              },
+            },
             status: MaintenanceStatus.OPEN,
           },
         }),
         this.prisma.maintenanceTicket.count({
           where: {
-            unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } },
+            unit: {
+              property: {
+                organizationId,
+                ...(propertyIds ? { id: { in: propertyIds } } : {}),
+              },
+            },
             status: MaintenanceStatus.ASSIGNED,
           },
         }),
         this.prisma.maintenanceTicket.count({
           where: {
-            unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } },
+            unit: {
+              property: {
+                organizationId,
+                ...(propertyIds ? { id: { in: propertyIds } } : {}),
+              },
+            },
             status: MaintenanceStatus.IN_PROGRESS,
           },
         }),
         this.prisma.maintenanceTicket.count({
           where: {
-            unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } },
+            unit: {
+              property: {
+                organizationId,
+                ...(propertyIds ? { id: { in: propertyIds } } : {}),
+              },
+            },
             status: MaintenanceStatus.COMPLETED,
           },
         }),
         this.prisma.maintenanceTicket.groupBy({
           by: ['priority'],
-          where: { unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
+          where: {
+            unit: {
+              property: {
+                organizationId,
+                ...(propertyIds ? { id: { in: propertyIds } } : {}),
+              },
+            },
+          },
           _count: true,
         }),
       ]);
@@ -554,7 +609,10 @@ export class MaintenanceService {
 
   async getMyTickets(userId: string, organizationId: string) {
     await this.verifyUserOrganization(userId, organizationId);
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -603,7 +661,15 @@ export class MaintenanceService {
 
     // If manager/owner, get tickets assigned to them
     return this.prisma.maintenanceTicket.findMany({
-      where: { assignedToId: userId, unit: { property: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) } } },
+      where: {
+        assignedToId: userId,
+        unit: {
+          property: {
+            organizationId,
+            ...(propertyIds ? { id: { in: propertyIds } } : {}),
+          },
+        },
+      },
       include: {
         tenant: {
           select: {

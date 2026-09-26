@@ -33,7 +33,10 @@ export class PropertiesController {
   @Roles(UserRole.OWNER)
   @ApiOperation({ summary: 'Create a new property (Owner only)' })
   @ApiResponse({ status: 201, description: 'Property created successfully' })
-  @ApiResponse({ status: 403, description: 'Only owners can create properties' })
+  @ApiResponse({
+    status: 403,
+    description: 'Only owners can create properties',
+  })
   async create(@Body() dto: CreatePropertyDto, @Request() req) {
     return this.propertiesService.create(
       req.user.id,

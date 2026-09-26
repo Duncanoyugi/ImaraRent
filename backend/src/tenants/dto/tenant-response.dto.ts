@@ -34,6 +34,15 @@ export class TenantResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
+
+  @ApiProperty({ required: false })
+  invitationLink?: string;
+
+  @ApiProperty({ required: false })
+  invitationEmailQueued?: boolean;
+
+  @ApiProperty({ required: false })
+  invitationEmailError?: string;
 }
 
 export class TenantWithUnitDto extends TenantResponseDto {

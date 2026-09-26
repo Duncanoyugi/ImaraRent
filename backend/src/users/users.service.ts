@@ -94,7 +94,9 @@ export class UsersService {
     });
 
     if (properties.length !== propertyIds.length) {
-      throw new ForbiddenException('All assigned properties must belong to your organization');
+      throw new ForbiddenException(
+        'All assigned properties must belong to your organization',
+      );
     }
 
     const user = await this.prisma.$transaction(async (tx) => {
@@ -153,43 +155,70 @@ export class UsersService {
   async getManagerProperties(managerId: string, requestingUserId: string) {
     const requester = await this.requireOwner(requestingUserId);
     const manager = await this.prisma.user.findFirst({
-      where: { id: managerId, organizationId: requester.organizationId, role: UserRole.MANAGER },
+      where: {
+        id: managerId,
+        organizationId: requester.organizationId,
+        role: UserRole.MANAGER,
+      },
       select: { id: true },
     });
     if (!manager) throw new NotFoundException('Manager not found');
 
     return this.prisma.propertyManager.findMany({
-      where: { managerId, property: { organizationId: requester.organizationId } },
-      include: { property: { select: { id: true, name: true, address: true } } },
+      where: {
+        managerId,
+        property: { organizationId: requester.organizationId },
+      },
+      include: {
+        property: { select: { id: true, name: true, address: true } },
+      },
       orderBy: { assignedAt: 'desc' },
     });
   }
 
-  async assignManagerProperties(managerId: string, requestingUserId: string, dto: AssignManagerPropertiesDto) {
+  async assignManagerProperties(
+    managerId: string,
+    requestingUserId: string,
+    dto: AssignManagerPropertiesDto,
+  ) {
     const requester = await this.requireOwner(requestingUserId);
     const propertyIds = [...new Set(dto.propertyIds)];
     const [manager, properties] = await Promise.all([
       this.prisma.user.findFirst({
-        where: { id: managerId, organizationId: requester.organizationId, role: UserRole.MANAGER },
+        where: {
+          id: managerId,
+          organizationId: requester.organizationId,
+          role: UserRole.MANAGER,
+        },
         select: { id: true },
       }),
       this.prisma.property.findMany({
-        where: { id: { in: propertyIds }, organizationId: requester.organizationId },
+        where: {
+          id: { in: propertyIds },
+          organizationId: requester.organizationId,
+        },
         select: { id: true },
       }),
     ]);
     if (!manager) throw new NotFoundException('Manager not found');
     if (properties.length !== propertyIds.length) {
-      throw new ForbiddenException('All properties must belong to your organization');
+      throw new ForbiddenException(
+        'All properties must belong to your organization',
+      );
     }
 
     await this.prisma.$transaction([
-      this.prisma.propertyManager.updateMany({ where: { managerId }, data: { isActive: false } }),
-      ...propertyIds.map((propertyId) => this.prisma.propertyManager.upsert({
-        where: { propertyId_managerId: { propertyId, managerId } },
-        create: { propertyId, managerId, assignedBy: requestingUserId },
-        update: { isActive: true, assignedBy: requestingUserId },
-      })),
+      this.prisma.propertyManager.updateMany({
+        where: { managerId },
+        data: { isActive: false },
+      }),
+      ...propertyIds.map((propertyId) =>
+        this.prisma.propertyManager.upsert({
+          where: { propertyId_managerId: { propertyId, managerId } },
+          create: { propertyId, managerId, assignedBy: requestingUserId },
+          update: { isActive: true, assignedBy: requestingUserId },
+        }),
+      ),
     ]);
     return this.getManagerProperties(managerId, requestingUserId);
   }
@@ -197,7 +226,9 @@ export class UsersService {
   private async requireOwner(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || user.role !== UserRole.OWNER) {
-      throw new ForbiddenException('Only owners can manage manager assignments');
+      throw new ForbiddenException(
+        'Only owners can manage manager assignments',
+      );
     }
     return user;
   }
@@ -342,5 +373,4 @@ export class UsersService {
 
     return { success: true, message: 'Password changed successfully' };
   }
-
 }

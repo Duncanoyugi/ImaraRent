@@ -30,9 +30,15 @@ export class PropertiesService {
     // Verify user belongs to this organization
     await this.verifyUserOrganization(userId, organizationId);
 
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
     const properties = await this.prisma.property.findMany({
-      where: { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) },
+      where: {
+        organizationId,
+        ...(propertyIds ? { id: { in: propertyIds } } : {}),
+      },
       include: {
         units: {
           select: {
@@ -88,7 +94,11 @@ export class PropertiesService {
     await this.verifyUserOrganization(userId, organizationId);
 
     const property = await this.prisma.property.findFirst({
-      where: { id, organizationId, ...(await this.propertyScope(userId, organizationId)) },
+      where: {
+        id,
+        organizationId,
+        ...(await this.propertyScope(userId, organizationId)),
+      },
       include: {
         units: {
           include: {
@@ -143,7 +153,11 @@ export class PropertiesService {
     await this.verifyUserOrganization(userId, organizationId);
 
     const property = await this.prisma.property.findFirst({
-      where: { id, organizationId, ...(await this.propertyScope(userId, organizationId)) },
+      where: {
+        id,
+        organizationId,
+        ...(await this.propertyScope(userId, organizationId)),
+      },
     });
 
     if (!property) {
@@ -204,8 +218,14 @@ export class PropertiesService {
     // Verify user belongs to this organization
     await this.verifyUserOrganization(userId, organizationId);
 
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
-    const propertyWhere = { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) };
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
+    const propertyWhere = {
+      organizationId,
+      ...(propertyIds ? { id: { in: propertyIds } } : {}),
+    };
     const unitPropertyWhere = propertyIds
       ? { propertyId: { in: propertyIds } }
       : { property: { organizationId } };
@@ -247,7 +267,10 @@ export class PropertiesService {
   }
 
   private async propertyScope(userId: string, organizationId: string) {
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
     return propertyIds ? { id: { in: propertyIds } } : {};
   }
 

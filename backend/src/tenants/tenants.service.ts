@@ -7,11 +7,13 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { NotificationChannel, NotificationType, TenantStatus } from '@prisma/client';
+import { TenantStatus } from '@prisma/client';
 import { hash } from 'argon2';
 import * as crypto from 'crypto';
 import { CreateTenantDto, UpdateTenantDto, AcceptInvitationDto } from './dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { EmailService } from '../notifications/channels/email.service';
+import { TemplateService } from '../notifications/channels/template.service';
 
 @Injectable()
 export class TenantsService {
@@ -20,6 +22,8 @@ export class TenantsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly emailService: EmailService,
+    private readonly templateService: TemplateService,
   ) {}
 
   async create(userId: string, organizationId: string, dto: CreateTenantDto) {
@@ -91,12 +95,11 @@ export class TenantsService {
 
     const invitationLink = this.getInvitationLink(token);
     let invitationEmailQueued = false;
+    let invitationEmailError: string | null = null;
 
-    // The tenant is already persisted at this point. Invitation delivery is
-    // best-effort, so an email/queue failure must not turn a successful create
-    // into a 500 response that the client may retry.
+    // Send invitation email directly (bypassing queue for reliability)
     try {
-      invitationEmailQueued = await this.queueInvitationEmail({
+      invitationEmailQueued = await this.sendInvitationEmailDirect({
         tenantId: tenant.id,
         email: tenant.email,
         firstName: tenant.firstName,
@@ -110,10 +113,10 @@ export class TenantsService {
         managerEmail: await this.getManagerEmail(userId),
       });
     } catch (error) {
+      invitationEmailError =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Failed to prepare invitation for tenant ${tenant.id}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        `Failed to send invitation for tenant ${tenant.id}: ${invitationEmailError}`,
       );
     }
 
@@ -121,16 +124,22 @@ export class TenantsService {
       ...tenant,
       invitationLink,
       invitationEmailQueued,
+      invitationEmailError,
     };
   }
 
   async findAll(organizationId: string, userId: string, status?: TenantStatus) {
     await this.verifyUserOrganization(userId, organizationId);
 
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
     const where: any = {
       organizationId,
-      ...(propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {}),
+      ...(propertyIds
+        ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } }
+        : {}),
     };
 
     if (status) {
@@ -386,7 +395,7 @@ export class TenantsService {
     return { valid: true, tenant };
   }
 
-async resendInvitation(id: string, organizationId: string, userId: string) {
+  async resendInvitation(id: string, organizationId: string, userId: string) {
     await this.verifyUserOrganization(userId, organizationId);
 
     const tenant = await this.prisma.tenant.findFirst({
@@ -457,14 +466,14 @@ async resendInvitation(id: string, organizationId: string, userId: string) {
 
     const invitationLink = this.getInvitationLink(token);
     let invitationEmailQueued = false;
+    let invitationEmailError: string | null = null;
 
     const activeLease = tenant.leases?.[0];
     const unit = activeLease?.unit;
 
-    // The invitation token has already been renewed. A notification failure
-    // should still let the manager use the returned link or try again later.
+    // Send invitation email directly (bypassing queue for reliability)
     try {
-      invitationEmailQueued = await this.queueInvitationEmail({
+      invitationEmailQueued = await this.sendInvitationEmailDirect({
         tenantId: updatedTenant.id,
         email: updatedTenant.email,
         firstName: updatedTenant.firstName,
@@ -478,10 +487,10 @@ async resendInvitation(id: string, organizationId: string, userId: string) {
         managerEmail: await this.getManagerEmail(userId),
       });
     } catch (error) {
+      invitationEmailError =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Failed to prepare resent invitation for tenant ${updatedTenant.id}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        `Failed to send resent invitation for tenant ${updatedTenant.id}: ${invitationEmailError}`,
       );
     }
 
@@ -489,6 +498,7 @@ async resendInvitation(id: string, organizationId: string, userId: string) {
       ...updatedTenant,
       invitationLink,
       invitationEmailQueued,
+      invitationEmailError,
     };
   }
 
@@ -652,13 +662,24 @@ async resendInvitation(id: string, organizationId: string, userId: string) {
   }
 
   private async propertyScope(userId: string, organizationId: string) {
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
-    return { organizationId, ...(propertyIds ? { id: { in: propertyIds } } : {}) };
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
+    return {
+      organizationId,
+      ...(propertyIds ? { id: { in: propertyIds } } : {}),
+    };
   }
 
   private async tenantScope(userId: string, organizationId: string) {
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
-    return propertyIds ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } } : {};
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
+    return propertyIds
+      ? { leases: { some: { unit: { propertyId: { in: propertyIds } } } } }
+      : {};
   }
 
   private getInvitationLink(token: string): string {
@@ -671,10 +692,12 @@ async resendInvitation(id: string, organizationId: string, userId: string) {
       where: { id: userId },
       select: { email: true },
     });
-    return user?.email || process.env.MAIL_FROM_EMAIL || 'support@imararent.com';
+    return (
+      user?.email || process.env.MAIL_FROM_EMAIL || 'support@imararent.com'
+    );
   }
 
-  private async queueInvitationEmail(data: {
+  private async sendInvitationEmailDirect(data: {
     tenantId: string;
     email: string;
     firstName: string;
@@ -688,23 +711,32 @@ async resendInvitation(id: string, organizationId: string, userId: string) {
     managerEmail: string;
   }): Promise<boolean> {
     try {
-      await this.notificationsService.send({
-        type: NotificationType.TENANT_INVITATION,
-        channel: NotificationChannel.EMAIL,
-        email: data.email,
-        tenantId: data.tenantId,
+      // Render using file-based template directly (bypasses database template)
+      const templatePath = 'email/tenant-invitation.hbs';
+      const html = this.templateService.renderFile(templatePath, data);
+
+      const sent = await this.emailService.send({
+        to: data.email,
         subject: 'Welcome to ImaraRent - Complete Your Registration',
-        content: 'email/tenant-invitation.hbs',
-        metadata: data,
+        html,
       });
+
+      if (!sent) {
+        throw new Error('Brevo email service returned failure');
+      }
+
+      this.logger.log(
+        `Invitation email sent directly to ${data.email} for tenant ${data.tenantId}`,
+      );
+
       return true;
     } catch (error) {
       this.logger.error(
-        `Failed to queue invitation email for tenant ${data.tenantId}: ${
+        `Failed to send invitation email for tenant ${data.tenantId}: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
-      return false;
+      throw error;
     }
   }
 }

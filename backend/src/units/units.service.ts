@@ -75,9 +75,17 @@ export class UnitsService {
   ) {
     // Verify all units belong to properties in this organization
     const propertyIds = [...new Set(units.map((u) => u.propertyId))];
-    const accessiblePropertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
-    if (accessiblePropertyIds && propertyIds.some((id) => !accessiblePropertyIds.includes(id))) {
-      throw new ForbiddenException('You can only manage units in assigned properties');
+    const accessiblePropertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
+    if (
+      accessiblePropertyIds &&
+      propertyIds.some((id) => !accessiblePropertyIds.includes(id))
+    ) {
+      throw new ForbiddenException(
+        'You can only manage units in assigned properties',
+      );
     }
 
     for (const propertyId of propertyIds) {
@@ -374,7 +382,10 @@ export class UnitsService {
   }
 
   private async propertyScope(userId: string, organizationId: string) {
-    const propertyIds = await this.prisma.getAccessiblePropertyIds(userId, organizationId);
+    const propertyIds = await this.prisma.getAccessiblePropertyIds(
+      userId,
+      organizationId,
+    );
     return propertyIds ? { id: { in: propertyIds } } : {};
   }
 }

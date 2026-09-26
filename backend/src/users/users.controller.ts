@@ -19,7 +19,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { AssignManagerPropertiesDto, InviteManagerDto, UpdateUserDto,
+import {
+  AssignManagerPropertiesDto,
+  InviteManagerDto,
+  UpdateUserDto,
   ChangePasswordDto,
 } from './dto';
 
@@ -68,7 +71,11 @@ export class UsersController {
 
   @Post(':id/assign-properties')
   @Roles(UserRole.OWNER)
-  async assignManagerProperties(@Param('id') id: string, @Body() dto: AssignManagerPropertiesDto, @Request() req) {
+  async assignManagerProperties(
+    @Param('id') id: string,
+    @Body() dto: AssignManagerPropertiesDto,
+    @Request() req,
+  ) {
     return this.usersService.assignManagerProperties(id, req.user.id, dto);
   }
 
@@ -104,7 +111,10 @@ export class UsersController {
   @ApiOperation({ summary: 'Change your own password' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({ status: 401, description: 'Current password is incorrect' })
-  @ApiResponse({ status: 403, description: 'Cannot change another user password' })
+  @ApiResponse({
+    status: 403,
+    description: 'Cannot change another user password',
+  })
   async changePassword(
     @Param('id') id: string,
     @Body() dto: ChangePasswordDto,
@@ -112,5 +122,4 @@ export class UsersController {
   ) {
     return this.usersService.changePassword(id, req.user.id, dto);
   }
-
 }

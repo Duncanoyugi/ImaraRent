@@ -1,12 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateTicketDto } from './create-ticket.dto';
-import {
-  IsOptional,
-  IsEnum,
-  IsNumber,
-  Min,
-  IsString,
-} from 'class-validator';
+import { IsOptional, IsEnum, IsNumber, Min, IsString } from 'class-validator';
 import { MaintenanceStatus, MaintenancePriority } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';

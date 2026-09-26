@@ -38,12 +38,12 @@ export const useCreateTenant = () => {
     mutationFn: (data: CreateTenantData) => tenantService.create(data),
     onSuccess: (tenant) => {
       queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
-      showToast.success(
-        'Tenant created successfully',
-        tenant.invitationEmailQueued
-          ? 'Invitation email has been queued for delivery.'
-          : 'Invitation email could not be queued. Please resend the invitation.',
-      );
+      if (tenant.invitationEmailQueued) {
+        showToast.success('Tenant created successfully', 'Invitation email has been sent.');
+      } else {
+        const errorMsg = tenant.invitationEmailError || 'Please resend the invitation.';
+        showToast.error('Tenant created', `Invitation email could not be sent: ${errorMsg}`);
+      }
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Failed to create tenant';
@@ -93,11 +93,12 @@ export const useResendInvitation = () => {
     mutationFn: (tenantId: string) => tenantService.resendInvitation(tenantId),
     onSuccess: (tenant) => {
       queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
-      showToast.success(
-        tenant.invitationEmailQueued
-          ? 'Invitation queued for delivery'
-          : 'Invitation could not be queued',
-      );
+      if (tenant.invitationEmailQueued) {
+        showToast.success('Invitation sent successfully');
+      } else {
+        const errorMsg = tenant.invitationEmailError || 'Please try again later.';
+        showToast.error('Failed to resend invitation', errorMsg);
+      }
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Failed to resend invitation';

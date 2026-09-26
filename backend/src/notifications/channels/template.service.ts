@@ -10,12 +10,33 @@ type HandlebarsTemplateFunction = (data: Record<string, any>) => string;
 @Injectable()
 export class TemplateService {
   private readonly logger = new Logger(TemplateService.name);
-  private readonly templatesDir = path.join(__dirname, '../../templates');
+  private readonly templatesDir = this.getTemplatesDir();
   private compiledTemplates: Map<string, HandlebarsTemplateFunction> =
     new Map();
 
   constructor(private readonly prisma: PrismaService) {
     this.registerHelpers();
+  }
+
+  private getTemplatesDir(): string {
+    // Try multiple locations for templates
+    // 1. Dev mode: src/templates (relative to __dirname in src/notifications/channels)
+    // 2. Prod mode: dist/templates (relative to __dirname in dist/notifications/channels)
+    // 3. Fallback: process.cwd() + /src/templates
+    const candidates = [
+      path.join(__dirname, '../../templates'),  // dev: src/templates, prod: dist/templates
+      path.join(process.cwd(), 'src/templates'), // dev fallback
+      path.join(process.cwd(), 'dist/templates'), // prod fallback
+    ];
+
+    for (const dir of candidates) {
+      if (fs.existsSync(dir)) {
+        return dir;
+      }
+    }
+
+    // Fallback to first candidate
+    return candidates[0];
   }
 
   async render(
@@ -54,6 +75,26 @@ export class TemplateService {
       return result;
     } catch (error) {
       this.logger.error(`Failed to render template: ${error.message}`);
+      throw error;
+    }
+  }
+
+  renderFile(templatePath: string, data: Record<string, any>): string {
+    try {
+      // Use file-based template directly (bypasses database)
+      const fullPath = path.join(this.templatesDir, templatePath);
+      if (!fs.existsSync(fullPath)) {
+        throw new NotFoundException(`Template not found: ${templatePath}`);
+      }
+      const templateContent = fs.readFileSync(fullPath, 'utf-8');
+
+      // Compile and render
+      const compiled = this.compileTemplate(templateContent);
+      const result = compiled(data);
+
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to render file template: ${error.message}`);
       throw error;
     }
   }

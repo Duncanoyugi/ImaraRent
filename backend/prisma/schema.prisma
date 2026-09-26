@@ -85,6 +85,7 @@ model Unit {
   updatedAt          DateTime            @updatedAt
   propertyId         String
   leases             Lease[]
+  tenants            Tenant[]
   maintenanceTickets MaintenanceTicket[]
   property           Property            @relation(fields: [propertyId], references: [id])
 
@@ -104,6 +105,8 @@ model Tenant {
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   userId               String?             @unique
+  unitId               String?
+  unit                 Unit?               @relation(fields: [unitId], references: [id])
   organizationId       String
   status               TenantStatus        @default(PENDING)
   invitationToken      String?             @unique

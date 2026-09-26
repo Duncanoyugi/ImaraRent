@@ -36,6 +36,7 @@ export interface Tenant {
   invitationToken?: string | null;
   invitationLink?: string | null;
   invitationEmailQueued?: boolean;
+  invitationEmailError?: string | null;
 }
 
 export interface CreateTenantData {

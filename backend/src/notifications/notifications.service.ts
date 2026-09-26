@@ -66,7 +66,9 @@ export class NotificationsService {
           },
         },
       );
-      this.logger.log(`Notification queued: ${notification.id} (${dto.channel})`);
+      this.logger.log(
+        `Notification queued: ${notification.id} (${dto.channel})`,
+      );
     } catch (error) {
       // Local development can run without Redis. Do not leave invitations
       // undelivered simply because the optional background queue is offline.
