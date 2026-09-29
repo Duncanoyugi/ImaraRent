@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FormField } from '@/components/forms/form-field';
 import { authService } from '../services/auth.service';
@@ -61,11 +61,11 @@ export const ResetPasswordForm = () => {
       <input type="hidden" {...register('token')} />
 
       <FormField label="New password" required error={errors.password}>
-        <Input type="password" autoComplete="new-password" {...register('password')} />
+        <PasswordInput autoComplete="new-password" {...register('password')} />
       </FormField>
 
       <FormField label="Repeat the password" required error={errors.confirmPassword}>
-        <Input type="password" autoComplete="new-password" {...register('confirmPassword')} />
+        <PasswordInput autoComplete="new-password" {...register('confirmPassword')} />
       </FormField>
 
       <Button type="submit" loading={reset.isPending} className="w-full gap-2">

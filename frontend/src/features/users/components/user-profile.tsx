@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UserRoleBadge } from './user-role-badge';
 import { useAuth } from '@/features/auth/hooks/use-auth';
@@ -204,29 +205,22 @@ export const UserProfile = () => {
           <form onSubmit={onChangePassword} className="space-y-4" noValidate>
             <div className="space-y-1.5">
               <Label htmlFor="currentPassword">Current password</Label>
-              <Input
+              <PasswordInput
                 id="currentPassword"
-                type="password"
                 autoComplete="current-password"
+                error={passwordForm.formState.errors.currentPassword?.message}
                 {...passwordForm.register('currentPassword')}
-                aria-invalid={!!passwordForm.formState.errors.currentPassword}
               />
-              {passwordForm.formState.errors.currentPassword && (
-                <p className="text-xs text-error-600">
-                  {passwordForm.formState.errors.currentPassword.message}
-                </p>
-              )}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="newPassword">New password</Label>
-                <Input
+                <PasswordInput
                   id="newPassword"
-                  type="password"
                   autoComplete="new-password"
+                  error={passwordForm.formState.errors.newPassword?.message}
                   {...passwordForm.register('newPassword')}
-                  aria-invalid={!!passwordForm.formState.errors.newPassword}
                 />
                 {newPassword && (
                   <div className="flex items-center gap-2 pt-0.5">
@@ -252,27 +246,16 @@ export const UserProfile = () => {
                     <span className="text-xs text-neutral-500">{strength.label}</span>
                   </div>
                 )}
-                {passwordForm.formState.errors.newPassword && (
-                  <p className="text-xs text-error-600">
-                    {passwordForm.formState.errors.newPassword.message}
-                  </p>
-                )}
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="confirmPassword">Repeat new password</Label>
-                <Input
+                <PasswordInput
                   id="confirmPassword"
-                  type="password"
                   autoComplete="new-password"
+                  error={passwordForm.formState.errors.confirmPassword?.message}
                   {...passwordForm.register('confirmPassword')}
-                  aria-invalid={!!passwordForm.formState.errors.confirmPassword}
                 />
-                {passwordForm.formState.errors.confirmPassword && (
-                  <p className="text-xs text-error-600">
-                    {passwordForm.formState.errors.confirmPassword.message}
-                  </p>
-                )}
               </div>
             </div>
 

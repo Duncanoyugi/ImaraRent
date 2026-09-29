@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useRegister } from '../hooks';
 import { registerSchema, type RegisterFormData } from '../schemas/auth.schemas';
 
@@ -82,9 +83,8 @@ export const RegisterForm = () => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             placeholder="Min 8 characters"
             error={errors.password?.message}
             {...register('password')}
@@ -92,9 +92,8 @@ export const RegisterForm = () => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">Confirm Password</Label>
-          <Input
+          <PasswordInput
             id="confirmPassword"
-            type="password"
             placeholder="Confirm your password"
             error={errors.confirmPassword?.message}
             {...register('confirmPassword')}

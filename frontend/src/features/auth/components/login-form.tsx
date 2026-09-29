@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useLogin } from '../hooks';
 import { loginSchema, type LoginFormData } from '../schemas/auth.schemas';
 
@@ -49,9 +50,8 @@ export const LoginForm = () => {
             Forgot password?
           </Link>
         </div>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           placeholder="Enter your password"
           error={errors.password?.message}
           {...register('password')}
