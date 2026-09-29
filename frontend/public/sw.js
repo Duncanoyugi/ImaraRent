@@ -7,9 +7,8 @@
  * Mirrors the policy in src/pwa/cache.ts — keep the two in step.
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const SHELL_CACHE = `imararent-shell-${CACHE_VERSION}`;
-const ASSET_CACHE = `imararent-assets-${CACHE_VERSION}`;
 const API_CACHE = `imararent-api-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = ['/', '/index.html', '/offline.html', '/manifest.webmanifest'];
@@ -27,7 +26,11 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  const keep = new Set([SHELL_CACHE, ASSET_CACHE, API_CACHE]);
+  // Every cache is versioned by CACHE_VERSION, so bumping it on each release
+  // drops the previous release's entries here. `assets` is intentionally not
+  // in `keep`: it was removed, and leaving the old name in the set is what
+  // let stale build chunks survive indefinitely.
+  const keep = new Set([SHELL_CACHE, API_CACHE]);
   event.waitUntil(
     caches
       .keys()
@@ -45,17 +48,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
-
-const cacheFirst = async (request, cacheName) => {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  const response = await fetch(request);
-  if (response.ok) {
-    const cache = await caches.open(cacheName);
-    cache.put(request, response.clone());
-  }
-  return response;
-};
 
 const networkFirst = async (request, cacheName) => {
   try {
@@ -92,11 +84,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (/\.(?:js|css|woff2?|png|svg|jpg|jpeg|webp|ico)$/.test(url.pathname)) {
-    event.respondWith(cacheFirst(request, ASSET_CACHE));
-    return;
-  }
-
+  // Build assets are deliberately NOT cached here. Vite gives every chunk a
+  // content hash, so the browser HTTP cache already holds them immutably and
+  // safely. Storing them in Cache Storage added nothing and, because the cache
+  // name was versioned by hand rather than per release, it pinned the previous
+  // deployment's filenames — requests for chunks a newer deploy had removed
+  // came back 404 and the app could not boot.
   if (CACHEABLE_API.some((pattern) => pattern.test(url.pathname))) {
     event.respondWith(networkFirst(request, API_CACHE));
   }
